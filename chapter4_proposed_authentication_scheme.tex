@@ -1,0 +1,373 @@
+% Chapter 4 draft: Sections 4.1--4.6.
+% The citation keys used here are supplied in chapter4_references.bib.
+% Merge those entries into the dissertation's main .bib file and remove
+% duplicates before compiling the complete thesis.
+
+\chapter{Proposed Blockchain-Based Authentication Scheme and Implementation}
+\label{chap:proposed-scheme}
+
+\section{Introduction}
+\label{sec:ch4-introduction}
+
+Chapter~\ref{chap:methodology} established how the proposed mechanism will be evaluated. This chapter turns those methodological choices into a concrete system design. The central problem is deliberately narrow: a UAV that wishes to interact with a delivery operator's ground control station (GCS) must prove that it is a registered, currently authorised device and that it possesses the private key associated with its identity. The GCS must reach this decision without trusting an identifier presented in plain text and without accepting an old authentication response replayed by an attacker.
+
+Blockchain-based UAV schemes in the literature have used distributed ledgers and smart contracts to support identity checks, access control and auditable session records. For example, Bera et al. use a private blockchain to detect unauthorised UAVs, while BETA-UAV evaluates an Ethereum-based authentication design against impersonation, replay and message-modification attacks \cite{Bera2021PrivateBlockchain,Hafeez2024BETAUAV}. These studies demonstrate that blockchain can be used as part of an authentication architecture; they do not establish that it is always more secure or more efficient than a conventional PKI. The design in this dissertation therefore treats blockchain as an identity-status and audit component, not as a substitute for sound cryptography, protected private keys or secure system administration.
+
+The chapter is organised from context to implementation. It first fixes the authentication boundary and identifies the participating entities. It then derives functional, security, performance and privacy requirements, followed by the threat model and adversary capabilities. Section~\ref{sec:blockchain-platform-selection} explains the choice of an Ethereum-compatible platform and, importantly, distinguishes the Ganache proof of concept from a production permissioned network. Subsequent sections of the completed chapter can use these foundations to present the architecture, protocol messages, smart contract and prototype implementation without changing the underlying trust assumptions.
+
+\section{System Context and Authentication Scope}
+\label{sec:system-context}
+
+The proposed system represents a delivery network operated by one logistics organisation, or by a small group of organisations that agree on a common UAV identity policy. UAVs communicate with a GCS to request access to operational services such as mission retrieval, telemetry submission or delivery-status updates. Before any of these services is made available, the GCS performs UAV-to-GCS authentication. UAV-to-UAV authentication, customer authentication and the physical verification of a delivered parcel are not included in the primary protocol. Keeping this boundary explicit avoids the common problem of describing a general ``UAV security system'' without stating who is authenticating whom.
+
+Each legitimate UAV is enrolled before operational use. During enrolment, the registration authority verifies the device through an organisational procedure and creates a registry entry containing a pseudonymous UAV identifier, a public-key reference, an operational status and an assigned role. The private key remains with the UAV and is never placed on the ledger. Digital signatures are used because they can provide evidence of possession of a private key and detect unauthorised modification of signed data \cite{NISTFIPS1865}. Registration proves that an authorised party accepted the public-key binding; it does not prove that the UAV will remain uncompromised for its entire lifetime.
+
+The authentication exchange follows a challenge--response structure:
+
+\begin{enumerate}
+    \item The UAV opens a connection to the GCS and submits its pseudonymous identifier.
+    \item The GCS creates a fresh, unpredictable nonce and associates it with a short-lived session identifier and expiry time.
+    \item The UAV signs a domain-separated authentication message containing the UAV identifier, GCS identifier, nonce, session identifier, timestamp and requested operation.
+    \item The GCS checks that the nonce is current and unused, retrieves the UAV's registered public key and status, verifies the signature, and evaluates the requested operation against the UAV's assigned role.
+    \item The GCS returns an accept-or-reject decision. A consumed nonce is invalidated regardless of the outcome so that the same response cannot be tried repeatedly.
+\end{enumerate}
+
+Domain separation means that the signed message includes a fixed protocol label and version. A signature created for another application or message type should therefore not be accepted as a UAV authentication response. The exact byte encoding must be deterministic: both parties must sign and verify the same ordered fields rather than an ambiguous concatenation of strings. The protocol design is presented as an application-layer mechanism. In deployment, the communication channel should additionally use a current transport-security protocol to protect confidentiality and reduce exposure to eavesdropping, tampering and message forgery \cite{RFC9846}. Transport encryption complements the signed challenge; it does not replace proof that the claimant controls the registered UAV key.
+
+The ledger stores only information needed to support identity and authorisation decisions. The proposed on-chain record contains a pseudonymous UAV identifier, public-key or public-key hash, role, status, registration time and the identifiers of authorised state-changing transactions. Customer names, delivery addresses, parcel contents, precise flight paths, continuous telemetry and private keys remain off-chain. This separation reduces unnecessary disclosure and avoids treating an append-only ledger as a general delivery database.
+
+Registration, revocation and role changes are state-changing operations. Routine authentication should, where possible, use a read-only status query so that a GCS decision does not depend on waiting for a new block. An optional audit transaction may record a successful or rejected authentication event, but its confirmation latency is measured separately from the immediate decision latency. This distinction is important: placing consensus directly on the critical path may improve shared auditability, but it also changes the operational meaning and cost of authentication.
+
+\section{System Entities and Trust Assumptions}
+\label{sec:entities-trust}
+
+Five logical entities participate in the design. ``Logical'' is significant here because a small proof of concept may run several roles on one physical computer. Co-location does not remove the need to describe the roles separately; it merely limits what the prototype can demonstrate about organisational independence and fault tolerance.
+
+\subsection{UAV Nodes}
+\label{subsec:uav-nodes}
+
+A UAV node is the claimant in the authentication exchange. It holds a pseudonymous identifier and a private signing key corresponding to the public key registered for that identity. The UAV produces signatures over GCS-issued challenges but does not issue identities, alter its own status or decide whether access should be granted. This restricted role follows the principle of least privilege: a device should possess only the authority needed to complete its operational task \cite{SaltzerSchroeder1975}.
+
+The proposed UAV is a lightweight application client, not a validator or full blockchain node. Requiring each aircraft to maintain the full ledger would add storage, synchronisation and networking responsibilities that are not necessary for proving identity. The client communicates with the GCS, while the GCS or a controlled gateway queries the ledger. This design is more realistic for resource-constrained aircraft, although it means that temporary loss of GCS connectivity can prevent a fresh online status check.
+
+The UAV private key is assumed to be generated using a suitable cryptographic library and stored in a protected key store where the available platform permits it. The prototype may use software-held test keys, but such storage must not be described as equivalent to a hardware security module or secure element. If a UAV key is copied by an attacker, the signature mechanism will identify the key holder as the UAV until the compromise is detected and the registry entry is revoked.
+
+\subsection{Ground Control Station}
+\label{subsec:gcs}
+
+The GCS is the verifier and policy-enforcement point. It creates authentication challenges, maintains the short-lived nonce state, verifies signatures, queries current identity status and applies role-based authorisation rules. It also provides the boundary between the UAV communication channel and protected delivery services. A positive cryptographic result is therefore necessary but not sufficient: the GCS must also confirm that the identity is active and authorised for the requested action.
+
+The GCS belongs to the trusted computing base of the prototype. A compromised GCS could grant local access even if the ledger contained the correct state, suppress a valid request, or misreport an authentication result. Blockchain does not repair a malicious verifier. For this reason, administrative access to the GCS should be restricted, its software and configuration should be version controlled, and its decision logs should be protected from ordinary UAV accounts.
+
+Where a blockchain audit transaction is enabled, the GCS submits only the minimum event data needed for the experiment. It does not publish the full signed authentication request or operational delivery data. The GCS also measures decision time and blockchain commit time separately, following the latency boundaries established in Chapter~\ref{chap:methodology}.
+
+\subsection{Registration Authority}
+\label{subsec:registration-authority}
+
+The registration authority (RA) establishes the initial link between a UAV identifier, public key, operator and role. It may also approve key replacement after maintenance or compromise. The RA is trusted to verify enrolment evidence and to submit only legitimate registration changes. This role is unavoidable in a permissioned identity system: a ledger can preserve an approved binding, but it cannot independently determine whether a physical aircraft should have been approved in the first place.
+
+The RA uses a dedicated privileged account to call registration and update functions. It is not permitted to authenticate as a UAV merely because it can manage identity records. In a production setting, high-impact actions could require approval from more than one organisational role. The proof of concept may implement a simpler single-authority workflow, but that simplification is documented as a governance limitation rather than presented as decentralised enrolment.
+
+\subsection{Blockchain Validator Nodes}
+\label{subsec:validator-nodes}
+
+Validator nodes maintain replicated ledger state, execute valid smart-contract transactions and participate in the network's consensus procedure. In a genuine permissioned Ethereum deployment, node and account permissioning can restrict participation to approved organisations, and proof-of-authority variants can be used instead of public-network proof of stake \cite{BesuPrivateNetworks2026,BesuPermissioning2026}. Validators do not decide whether a signature made by a UAV should be accepted locally by a GCS unless that logic is explicitly placed in the contract.
+
+Conceptually, the validators may be operated by the logistics provider, a warehouse operator and an independent regulator or service partner. Such separation would make unilateral rewriting of shared status records more difficult. In the prototype, however, Ganache provides a controlled development blockchain and may run as a single local process. Ganache is designed for deterministic development and testing \cite{GanacheDocumentation}; it does not demonstrate Byzantine fault tolerance, organisational independence or production consensus resilience. Claims about those properties are therefore reserved for future multi-node deployment work.
+
+\subsection{System Administrator}
+\label{subsec:system-administrator}
+
+The system administrator deploys and configures the prototype, manages service availability, starts blockchain nodes, controls software versions and monitors operational health. This role is distinct from the RA: the administrator maintains infrastructure, whereas the RA decides which UAV identities are legitimate. In a student prototype both roles may be performed by the researcher, but their permissions should remain logically separate in the design and, where practical, in the accounts used by the system.
+
+The administrator is not assumed to be incapable of error. Misconfiguration, accidental key exposure and incorrect contract deployment are realistic risks. Deployment addresses, contract bytecode or source-code hashes, network identifiers and account roles should therefore be recorded as part of the reproducibility evidence. Administrator keys must not be embedded in source code or committed to the dissertation repository.
+
+Table~\ref{tab:entity-trust-summary} summarises the intended trust boundary.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Entity responsibilities and trust boundaries}
+    \label{tab:entity-trust-summary}
+    \begin{tabular}{|p{0.18\textwidth}|p{0.34\textwidth}|p{0.35\textwidth}|}
+        \hline
+        \textbf{Entity} & \textbf{Trusted responsibility} & \textbf{Not trusted or not permitted to} \\
+        \hline
+        UAV & Protect its key and sign fresh challenges & Register itself, change its role or reuse a challenge \\
+        \hline
+        GCS & Verify requests and enforce current policy & Create legitimate identities without RA approval \\
+        \hline
+        RA & Verify enrolment and approve identity changes & Operate as a UAV merely through its management role \\
+        \hline
+        Validator & Maintain and execute agreed ledger state & Establish the real-world legitimacy of an aircraft \\
+        \hline
+        Administrator & Maintain the deployed infrastructure & Bypass identity policy during ordinary operation \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{System Requirements}
+\label{sec:system-requirements}
+
+The requirements below are derived from the authentication scope, literature review and evaluation questions. They are written as testable statements rather than general aspirations. Each requirement has an identifier so that Chapter~\ref{chap:evaluation} can trace implementation evidence and experimental results back to the design.
+
+\subsection{Functional Requirements}
+\label{subsec:functional-requirements}
+
+The functional requirements describe what the prototype must do. They do not state that a function is secure merely because it exists.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Functional requirements}
+    \label{tab:functional-requirements}
+    \begin{tabular}{|p{0.12\textwidth}|p{0.76\textwidth}|}
+        \hline
+        \textbf{ID} & \textbf{Requirement} \\
+        \hline
+        FR1 & An authorised RA shall be able to register a UAV identifier, public-key reference, role and initial status. \\
+        \hline
+        FR2 & The GCS shall be able to retrieve the latest identity status and public-key binding used for an authentication decision. \\
+        \hline
+        FR3 & The system shall perform challenge--response authentication and return an explicit accept-or-reject result. \\
+        \hline
+        FR4 & An authorised RA shall be able to revoke an identity and, where required, register a replacement key through a documented update procedure. \\
+        \hline
+        FR5 & The GCS shall reject a cryptographically valid request when the UAV role does not permit the requested operation. \\
+        \hline
+        FR6 & Authorised users shall be able to inspect registration, update and revocation events for audit and experimental verification. \\
+        \hline
+        FR7 & The system shall return a controlled failure when the identity service or blockchain RPC endpoint is unavailable, rather than silently granting access. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+FR4 separates revocation from deletion. An append-only ledger may preserve historical evidence that an identity once existed, while the current status prevents future authentication. Consequently, the system should not promise that revocation erases every historical reference. FR6 is also limited: auditability means that authorised investigators can reconstruct relevant state changes, not that every delivery event should be made visible to every participant.
+
+\subsection{Security Requirements}
+\label{subsec:security-requirements}
+
+Security requirements are based on fail-safe defaults, complete mediation and least privilege \cite{SaltzerSchroeder1975}. Access is denied unless all required checks succeed, and a successful authentication does not grant permissions beyond the registered role.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Security requirements}
+    \label{tab:security-requirements}
+    \begin{tabular}{|p{0.12\textwidth}|p{0.76\textwidth}|}
+        \hline
+        \textbf{ID} & \textbf{Requirement} \\
+        \hline
+        SR1 & The GCS shall authenticate only identities that are registered, active and authorised for the requested operation. \\
+        \hline
+        SR2 & The UAV shall demonstrate possession of its registered private key through a digital signature over the complete authentication context. \\
+        \hline
+        SR3 & Each challenge shall be unpredictable, short-lived and accepted at most once to resist replay. \\
+        \hline
+        SR4 & Modification of any signed identity, challenge, session or request field shall cause signature verification to fail. \\
+        \hline
+        SR5 & Registration, revocation and role-management functions shall be callable only by explicitly authorised accounts. \\
+        \hline
+        SR6 & A revoked identity shall be rejected after the revocation state becomes effective, even when the claimant still possesses its former key. \\
+        \hline
+        SR7 & Private keys and administrative secrets shall not be stored on-chain, logged in plain text or embedded in source code. \\
+        \hline
+        SR8 & Verification errors, stale state, RPC failure and unexpected input shall result in rejection rather than default acceptance. \\
+        \hline
+        SR9 & Security-relevant state changes shall produce attributable and time-ordered audit evidence. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+SR2 and SR4 rely on established digital-signature behaviour, but their effectiveness still depends on correct message encoding, key protection and signature verification \cite{NISTFIPS1865}. SR3 requires both nonce generation and state management; adding a timestamp alone is not enough if the verifier accepts the same still-valid message repeatedly. SR9 does not imply non-repudiation in every legal sense. It means that the prototype can associate a ledger state change with the account that signed the relevant transaction.
+
+\subsection{Performance Requirements}
+\label{subsec:performance-requirements}
+
+The project does not invent a production service-level target before measuring the prototype. Instead, performance requirements ensure that the relevant costs are observable and that the system remains usable across the workload range defined in Chapter~\ref{chap:methodology}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Performance requirements}
+    \label{tab:performance-requirements}
+    \begin{tabular}{|p{0.12\textwidth}|p{0.76\textwidth}|}
+        \hline
+        \textbf{ID} & \textbf{Requirement} \\
+        \hline
+        PR1 & The implementation shall expose separate measurements for authentication-decision latency and optional blockchain transaction-confirmation latency. \\
+        \hline
+        PR2 & The system shall record completed throughput, offered load, time-outs and failures under sequential and concurrent requests. \\
+        \hline
+        PR3 & CPU, memory and network overhead shall be measurable for both the blockchain mechanism and the PKI baseline under comparable conditions. \\
+        \hline
+        PR4 & The identity lookup and authentication workflow shall be evaluated as the number of registered UAVs and concurrent requests increases. \\
+        \hline
+        PR5 & Registration and revocation costs shall be reported separately from routine authentication costs. \\
+        \hline
+        PR6 & The GCS shall apply a documented time-out and fail securely when an authoritative status result cannot be obtained. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+These requirements prevent a favourable but incomplete performance claim. For example, reporting only read-only contract-call latency would omit the cost of maintaining the registry, while placing every successful authentication in a transaction and comparing its confirmation time with local certificate verification would compare different operational semantics. Both measurements are useful, but they must be labelled correctly.
+
+\subsection{Privacy Requirements}
+\label{subsec:privacy-requirements}
+
+Delivery systems can process location, customer and operational data. The design therefore follows data-minimisation and data-protection-by-design principles: personal data should be adequate, relevant and limited to what is necessary for the stated purpose \cite{GDPR2016}. This dissertation is not a legal-compliance assessment, but the technical design should avoid creating an unnecessary privacy problem.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Privacy requirements}
+    \label{tab:privacy-requirements}
+    \begin{tabular}{|p{0.12\textwidth}|p{0.76\textwidth}|}
+        \hline
+        \textbf{ID} & \textbf{Requirement} \\
+        \hline
+        PVR1 & The ledger shall contain only the identity and status fields required for authentication and audit. \\
+        \hline
+        PVR2 & Customer names, addresses, parcel information, precise flight histories and private keys shall remain off-chain. \\
+        \hline
+        PVR3 & UAVs shall use project-specific pseudonymous identifiers rather than directly encoding an owner or customer identity. \\
+        \hline
+        PVR4 & Authentication audit events shall avoid storing full message payloads when an event code, pseudonymous identifier and timestamp are sufficient. \\
+        \hline
+        PVR5 & Access to blockchain RPC services, experiment logs and identity-management interfaces shall be restricted to the roles that require it. \\
+        \hline
+        PVR6 & Off-chain logs shall have a stated retention period and shall be anonymised before publication with the dissertation dataset. \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Pseudonymisation reduces direct identification but does not guarantee anonymity. Repeated use of the same UAV identifier or public key can still reveal behavioural patterns, especially when combined with timestamps or location data. For that reason, the strongest privacy control in this design is not a claim that blockchain data are anonymous; it is the decision not to place delivery and continuous telemetry data on the ledger.
+
+\section{Threat Model and Adversary Capabilities}
+\label{sec:threat-model}
+
+The threat model focuses on the application-layer authentication path between a UAV and the GCS. UAV security literature identifies threats across aircraft, ground stations, wireless links and supporting infrastructure, including spoofing, replay, message modification, unauthorised access, denial of service, GPS manipulation and physical compromise \cite{Tsao2022UAVSurvey}. The proposed mechanism addresses only the subset that can reasonably be controlled by identity registration, signed challenge--response messages, current status checks and role enforcement.
+
+For network communication, the model adopts a Dolev--Yao-style attacker: the adversary can observe, block, copy, delay, replay, reorder and modify messages, and can construct new messages from information already known \cite{DolevYao1983}. The adversary is not assumed to break correctly implemented cryptographic primitives or derive a private key from its public key. This is a model for analysing protocol behaviour, not proof that the actual implementation is free from side-channel, library or coding vulnerabilities.
+
+The model considers four practical attacker positions. An external attacker has no valid identity but can interact with the network. An impersonator knows or guesses a legitimate UAV identifier but does not hold its private key. A revoked or under-privileged UAV holds a valid key yet is no longer entitled to authenticate or request a particular operation. Finally, a key-compromise attacker possesses a copied legitimate key. The first three are expected to be rejected by the proposed controls. The fourth exposes a limitation: cryptographic authentication identifies possession of a credential, so compromise detection and prompt revocation remain necessary.
+
+\subsection{Protected Assets}
+\label{subsec:protected-assets}
+
+The primary protected assets are:
+
+\begin{itemize}
+    \item UAV private keys and administrator or RA signing keys;
+    \item the binding between a UAV identifier, public key, role and current status;
+    \item GCS challenges, nonce state and authentication decisions;
+    \item registration, role-change and revocation transactions;
+    \item smart-contract code and deployment configuration;
+    \item audit records required to reconstruct security-relevant state changes; and
+    \item off-chain operational and personal data associated with delivery activity.
+\end{itemize}
+
+The most important integrity asset is the current identity state. An append-only history has limited value if an attacker can call an update function and mark an unauthorised identity as active. Similarly, protecting the contract while leaving the RA key in source code would move the point of failure rather than remove it.
+
+\subsection{Adversary Capabilities}
+\label{subsec:adversary-capabilities}
+
+Within the experimental environment, the adversary may:
+
+\begin{itemize}
+    \item submit arbitrary identifiers and malformed request fields;
+    \item capture and replay a previously valid signed response;
+    \item replace a legitimate UAV identifier with another identifier;
+    \item modify the nonce, timestamp, session identifier or requested role after signing;
+    \item generate its own key pair and claim that it belongs to a registered UAV;
+    \item authenticate using a valid but revoked identity;
+    \item request an operation outside the role assigned to a valid identity;
+    \item create concurrent requests intended to exhaust GCS or RPC resources; and
+    \item inspect publicly exposed contract interfaces and on-chain records available to its network role.
+\end{itemize}
+
+The adversary may know the protocol, contract interface and implementation design. Security must not depend on hiding these details. However, the attacker is not given RA, administrator or validator credentials unless a specific compromise case is being analysed. This separation allows the experiments to test ordinary authentication attacks without pretending that the same controls can contain a fully compromised trust anchor.
+
+\subsection{Security Assumptions}
+\label{subsec:security-assumptions}
+
+The proposed security argument depends on the following assumptions:
+
+\begin{enumerate}
+    \item Standard cryptographic primitives and libraries operate as intended, and key sizes provide an appropriate security level.
+    \item The GCS obtains an authentic copy of the deployed contract address and network identifier.
+    \item RA and administrator accounts are protected and are not controlled by the external attacker during ordinary tests.
+    \item The GCS itself is not malicious and correctly enforces the final decision.
+    \item Validator control does not exceed the fault threshold of the selected production consensus protocol. This assumption is architectural and is not validated by a single-node Ganache experiment.
+    \item Nonces are generated from a suitable source of unpredictability and are stored until use or expiry.
+    \item Where timestamps are enforced, clock skew remains within the documented acceptance window.
+    \item Off-chain communication uses a protected transport channel in deployment, while the signed application message remains independently verifiable.
+\end{enumerate}
+
+These assumptions are intentionally visible. A security claim is only meaningful when the conditions under which it holds are stated. In particular, ledger immutability does not compensate for a stolen RA key, an incorrect contract address or a GCS that ignores the authentication result.
+
+\subsection{Threats Outside the Research Scope}
+\label{subsec:out-of-scope-threats}
+
+Radio-frequency jamming and complete network denial of service are outside the preventive scope of the authentication mechanism. The implementation can time out and fail closed, but it cannot make a blocked wireless channel available. GPS spoofing and navigation-sensor manipulation are also outside scope because the protocol authenticates an identity and message; it does not verify the physical truth of a reported position. UAV malware, compromised flight-control firmware, destructive physical capture and side-channel extraction from real hardware are not reproduced in the software prototype.
+
+Private-key compromise is treated as a residual risk rather than ignored. The design supports revocation after compromise is detected, but it does not provide an independent behavioural or hardware signal capable of discovering that a key has been copied. Likewise, a malicious RA, compromised administrator or validator coalition is discussed in the security analysis but not claimed to be defeated by the same UAV challenge--response mechanism.
+
+Table~\ref{tab:threat-control-map} connects the in-scope threats to their intended controls and remaining limitations.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Threat, control and residual-risk mapping}
+    \label{tab:threat-control-map}
+    \begin{tabular}{|p{0.17\textwidth}|p{0.29\textwidth}|p{0.34\textwidth}|}
+        \hline
+        \textbf{Threat} & \textbf{Primary control} & \textbf{Residual risk} \\
+        \hline
+        UAV spoofing & Registered key binding and signed challenge & Stolen legitimate private key \\
+        \hline
+        Replay & Fresh, single-use nonce and session expiry & Weak randomness or incorrect nonce storage \\
+        \hline
+        Message tampering & Signature over the complete context & Unsigned transport metadata remains outside protection \\
+        \hline
+        Unauthorised access & Active-status and role check for each request & Misconfigured role or malicious GCS \\
+        \hline
+        Revoked identity use & Authoritative current-status query & Delay before revocation is committed or observed \\
+        \hline
+        Malicious registration & Restricted RA function & Compromised or dishonest RA \\
+        \hline
+        Ledger manipulation & Permissioned validation and replicated state & Validator collusion; not tested by single-node Ganache \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{Blockchain Platform Selection}
+\label{sec:blockchain-platform-selection}
+
+The platform was selected against the needs of this dissertation rather than against a claim that one ledger is universally superior. The important criteria were support for deterministic programmable access-control logic, controlled participation, mature development tooling, Python integration, repeatable local testing and the ability to measure contract execution overhead. The project also had to remain implementable within the time and resource limits of an MSc dissertation.
+
+Ethereum provides an account-based state model and an execution environment for smart contracts \cite{Wood2025Ethereum}. Solidity, established testing tools and Web3 libraries make it practical to implement and instrument a small identity registry. For a production private Ethereum network, Hyperledger Besu supports private networks, proof-of-authority consensus and node or account permissioning \cite{BesuPrivateNetworks2026,BesuPermissioning2026}. These properties align with a logistics setting in which validators are known organisations rather than anonymous public participants.
+
+Hyperledger Fabric was considered because it was designed as a modular permissioned ledger with membership services and configurable components \cite{Androulaki2018Fabric}. It is a strong candidate for an enterprise consortium and may offer a more natural organisational identity model than an Ethereum account. However, adopting Fabric would require a different chaincode, membership and deployment stack, while removing direct comparability with Ethereum gas measurements and the Solidity/Web3 prototype planned for this project.
+
+IOTA was considered because its current architecture uses a directed acyclic graph and targets low-latency, high-throughput distributed operation \cite{IOTAConsensus2026}. Its model may be attractive for resource-sensitive machine ecosystems, but it would change both the programming and consensus assumptions of the experiment. Corda was also reviewed; it is designed around transactions shared with relevant parties rather than a single globally visible state and was originally motivated by inter-organisational business workflows \cite{Brown2018Corda}. That selective-data model is valuable, but the platform is less closely aligned with the EVM smart-contract and gas-analysis objectives of this proof of concept.
+
+Table~\ref{tab:platform-comparison} records the decision rather than merely listing platform features.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Platform comparison for the proposed prototype}
+    \label{tab:platform-comparison}
+    \begin{tabular}{|p{0.14\textwidth}|p{0.24\textwidth}|p{0.24\textwidth}|p{0.24\textwidth}|}
+        \hline
+        \textbf{Platform} & \textbf{Relevant strength} & \textbf{Project limitation} & \textbf{Decision} \\
+        \hline
+        Ethereum-compatible private network & Solidity/EVM tooling, Web3 integration and measurable gas use & Permissioning and production consensus require a client such as Besu, not Ganache alone & Selected for the proof of concept \\
+        \hline
+        Hyperledger Fabric & Native permissioned architecture and modular membership model & Different development stack and no EVM gas comparison & Suitable alternative for future enterprise deployment \\
+        \hline
+        IOTA & DAG-based architecture intended for high-throughput distributed operation & Different data, programming and consensus model from the planned prototype & Not selected for this implementation \\
+        \hline
+        Corda & Selective transaction sharing and business-oriented workflow model & Less direct fit with the EVM identity-registry experiment & Not selected for this implementation \\
+        \hline
+    \end{tabular}
+\end{table}
+
+The implemented environment is therefore described precisely as a \emph{controlled-access Ethereum-compatible proof of concept}. Ganache supplies deterministic accounts, contract deployment, transaction receipts and repeatable state reset for development experiments \cite{GanacheDocumentation}. It does not by itself establish that the evaluated system is decentralised or Byzantine fault tolerant. The logical architecture includes validator nodes because that is the intended deployment model, but any resilience claim must either be tested later on a genuine multi-node permissioned client or presented as future work.
+
+This selection also explains how the results should be interpreted. Smart-contract correctness, transaction gas use, RPC overhead and local authentication behaviour can be evaluated with the chosen environment. Production block finality, geographically distributed validator latency, organisational governance and recovery from malicious validator behaviour cannot. Stating this boundary does not weaken the experiment; it makes the evidence proportional to what was actually built.
+

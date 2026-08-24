@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# Experiment artefacts and secrets (non-production, still never committed)
+var/
+besu/network/
+besu/tmp/
+besu/tmp-out/
+results/runs/
+*.pem
+*.key
+*.priv
+*.pub
+*.crt
+*.crl
+*.p12
+
+# Node / compiler
+node_modules/
+cache/
+artifacts/
+typechain-types/
+out/
+cache_hardhat/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Keep directory placeholders
+!results/.gitkeep
+!var/.gitkeep

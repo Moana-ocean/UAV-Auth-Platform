@@ -1,0 +1,155 @@
+# RESEARCH / TESTING ONLY. Four co-located validator processes on one host
+# do not demonstrate organisational independence or Byzantine fault tolerance.
+name: uav-auth-besu
+
+x-besu-common: &besu-common
+  image: hyperledger/besu:26.7.1
+  user: "0:0"
+  restart: unless-stopped
+  healthcheck:
+    test: ["CMD-SHELL", "cat /opt/besu/genesis.json"]
+    interval: 10s
+    timeout: 5s
+    retries: 12
+
+services:
+  validator1:
+    <<: *besu-common
+    container_name: uav-besu-validator1
+    command:
+      - --data-path=/opt/besu/data
+      - --genesis-file=/opt/besu/genesis.json
+      - --node-private-key-file=/opt/besu/keys/key
+      - --min-gas-price=0
+      - --rpc-http-enabled
+      - --rpc-http-api=ETH,NET,WEB3,QBFT,ADMIN,TXPOOL,DEBUG
+      - --rpc-http-host=0.0.0.0
+      - --rpc-http-cors-origins=all
+      - --host-allowlist=*
+      - --p2p-host=172.28.45.11
+      - --p2p-port=30303
+      - --rpc-http-port=8545
+      - --discovery-enabled=false
+      - --nat-method=NONE
+      - --static-nodes-file=/opt/besu/static-nodes.json
+      - --logging=INFO
+    volumes:
+      - ./network/genesis.json:/opt/besu/genesis.json:ro
+      - ./network/validator1:/opt/besu/keys:ro
+      - ./network/static-nodes.json:/opt/besu/static-nodes.json:ro
+      - validator1-data:/opt/besu/data
+    ports:
+      - "8545:8545"
+      - "30303:30303"
+    networks:
+      uavnet:
+        ipv4_address: 172.28.45.11
+
+  validator2:
+    <<: *besu-common
+    container_name: uav-besu-validator2
+    command:
+      - --data-path=/opt/besu/data
+      - --genesis-file=/opt/besu/genesis.json
+      - --node-private-key-file=/opt/besu/keys/key
+      - --min-gas-price=0
+      - --rpc-http-enabled
+      - --rpc-http-api=ETH,NET,WEB3,QBFT,ADMIN,TXPOOL,DEBUG
+      - --rpc-http-host=0.0.0.0
+      - --rpc-http-cors-origins=all
+      - --host-allowlist=*
+      - --p2p-host=172.28.45.12
+      - --p2p-port=30303
+      - --rpc-http-port=8545
+      - --discovery-enabled=false
+      - --nat-method=NONE
+      - --static-nodes-file=/opt/besu/static-nodes.json
+      - --logging=INFO
+    volumes:
+      - ./network/genesis.json:/opt/besu/genesis.json:ro
+      - ./network/validator2:/opt/besu/keys:ro
+      - ./network/static-nodes.json:/opt/besu/static-nodes.json:ro
+      - validator2-data:/opt/besu/data
+    ports:
+      - "8555:8545"
+      - "30304:30303"
+    networks:
+      uavnet:
+        ipv4_address: 172.28.45.12
+
+  validator3:
+    <<: *besu-common
+    container_name: uav-besu-validator3
+    command:
+      - --data-path=/opt/besu/data
+      - --genesis-file=/opt/besu/genesis.json
+      - --node-private-key-file=/opt/besu/keys/key
+      - --min-gas-price=0
+      - --rpc-http-enabled
+      - --rpc-http-api=ETH,NET,WEB3,QBFT,ADMIN,TXPOOL,DEBUG
+      - --rpc-http-host=0.0.0.0
+      - --rpc-http-cors-origins=all
+      - --host-allowlist=*
+      - --p2p-host=172.28.45.13
+      - --p2p-port=30303
+      - --rpc-http-port=8545
+      - --discovery-enabled=false
+      - --nat-method=NONE
+      - --static-nodes-file=/opt/besu/static-nodes.json
+      - --logging=INFO
+    volumes:
+      - ./network/genesis.json:/opt/besu/genesis.json:ro
+      - ./network/validator3:/opt/besu/keys:ro
+      - ./network/static-nodes.json:/opt/besu/static-nodes.json:ro
+      - validator3-data:/opt/besu/data
+    ports:
+      - "8565:8545"
+      - "30305:30303"
+    networks:
+      uavnet:
+        ipv4_address: 172.28.45.13
+
+  validator4:
+    <<: *besu-common
+    container_name: uav-besu-validator4
+    command:
+      - --data-path=/opt/besu/data
+      - --genesis-file=/opt/besu/genesis.json
+      - --node-private-key-file=/opt/besu/keys/key
+      - --min-gas-price=0
+      - --rpc-http-enabled
+      - --rpc-http-api=ETH,NET,WEB3,QBFT,ADMIN,TXPOOL,DEBUG
+      - --rpc-http-host=0.0.0.0
+      - --rpc-http-cors-origins=all
+      - --host-allowlist=*
+      - --p2p-host=172.28.45.14
+      - --p2p-port=30303
+      - --rpc-http-port=8545
+      - --discovery-enabled=false
+      - --nat-method=NONE
+      - --static-nodes-file=/opt/besu/static-nodes.json
+      - --logging=INFO
+    volumes:
+      - ./network/genesis.json:/opt/besu/genesis.json:ro
+      - ./network/validator4:/opt/besu/keys:ro
+      - ./network/static-nodes.json:/opt/besu/static-nodes.json:ro
+      - validator4-data:/opt/besu/data
+    ports:
+      - "8575:8545"
+      - "30306:30303"
+    networks:
+      uavnet:
+        ipv4_address: 172.28.45.14
+
+volumes:
+  validator1-data:
+  validator2-data:
+  validator3-data:
+  validator4-data:
+
+networks:
+  uavnet:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.45.0/24

@@ -1,0 +1,224 @@
+\chapter{Research Design and Experimental Methodology}
+\label{chap:research-design-methodology}
+
+\section{Research Approach}
+\label{sec:ch3-research-approach}
+This research adopts a design-science approach supported by controlled experimental evaluation\cite{Hevner2004DesignScience,Peffers2007DSRM}. Design science is appropriate because the study does not only observe an existing system; it produces and evaluates a technical artefact intended to address a defined operational problem. The artefact is a permissioned Ethereum authentication mechanism that manages UAV identity registration, verifies authentication requests, supports revocation and produces an auditable record of identity-management operations. Its performance and security behaviour are evaluated against a functionally comparable X.509 PKI baseline.
+
+The research process consists of five connected stages. First, the authentication problem and its security context are established through the critical literature review in Chapter~2. Second, the findings of that review are converted into functional, security and performance requirements. Third, the proposed mechanism and the PKI baseline are designed and implemented. Fourth, both mechanisms are subjected to identical normal, adversarial and scalability workloads. Fifth, the resulting measurements are analysed to determine the circumstances in which the proposed mechanism offers a defensible security or auditability benefit and the cost at which that benefit is obtained.
+The evaluation is primarily quantitative. Authentication latency, throughput, failure rate, attack rejection rate, processor utilisation, memory consumption, communication overhead and smart-contract gas usage are measured using instrumented test clients and system logs. Qualitative analysis is used only where a security property cannot be reduced to a single performance value, for example when assessing trust distribution, administrative privilege, residual risk or the effect of private-key compromise. This separation prevents performance measurements from being presented as proof of security and prevents architectural claims from being treated as measured results.
+
+The study is comparative rather than purely demonstrative. A prototype that completes an authentication exchange does not, by itself, establish that blockchain is necessary or advantageous. The X.509 baseline therefore provides a conventional reference point against which the additional costs and benefits of the proposed mechanism can be assessed. The comparison is designed around equivalent authentication objectives: both mechanisms must bind a UAV identity to a public key, verify possession of the corresponding private key, reject invalid or revoked identities and produce a clear accept-or-reject decision at the GCS.
+
+\section{Research Scope and Authentication Scenario}
+\label{sec:scope-authentication-scenario}
+
+The unit of analysis is an authentication attempt made by a UAV to a GCS within a delivery-network environment. The UAV is the claimant and the GCS is the verifier. Before operational use, an authorised registration authority enrols each legitimate UAV and associates its identifier with its public key and operational status. During authentication, the GCS issues a fresh challenge. The UAV signs data containing the challenge and relevant session information with its private key. The GCS then verifies the signature, checks the current identity status using the selected backend, and returns an authentication decision. The blockchain and PKI mechanisms use the same high-level challenge--response semantics so that the comparison does not confuse different security functions with different implementation technologies.
+
+The proposed blockchain deployment is private and permissioned. UAVs are treated as lightweight clients rather than full blockchain validators because delivery UAVs are resource-constrained and may experience intermittent connectivity. Validator nodes represent authorised infrastructure operators. Registration, status changes and revocation are controlled operations; participation in the underlying blockchain network does not automatically grant permission to register a UAV or change its status. The detailed allocation of roles and privileges is defined in Chapter~\ref{chap:proposed-scheme}.
+
+The study covers identity registration, challenge--response authentication, status checking, revocation and role-based access decisions. It examines UAV spoofing, replay, message tampering, unauthorised access and the attempted use of a revoked identity. The study does not claim to solve physical capture, radio-frequency jamming, denial of satellite-navigation signals, GPS spoofing, malicious sensor data, compromised flight-control software or general routing security. These threats may affect the wider delivery system, but they are outside the authentication boundary evaluated here. Private-key compromise is considered a residual risk: if an attacker obtains a valid UAV private key, neither the blockchain ledger nor an X.509 certificate can independently establish that the signer is no longer the legitimate device. Revocation and key-recovery procedures can limit the subsequent exposure but cannot retrospectively prevent the compromise.
+
+The experimental environment represents the authentication control plane rather than a complete physical delivery fleet. UAV clients and the GCS are software processes that reproduce the messages, cryptographic operations and status checks required by the two mechanisms. This approach enables repeatable loading and adversarial testing, although it limits direct generalisation to airborne hardware and wide-area wireless networks. Network delay, packet loss and hardware constraints are therefore either controlled experimental variables or limitations, rather than unreported properties of the prototype.
+
+\section{Research Questions and Experimental Hypotheses}
+\label{sec:questions-hypotheses}
+
+The research is guided by four questions:
+
+\begin{enumerate}
+    \item \textbf{RQ1:} To what extent can the proposed permissioned-blockchain mechanism prevent UAV spoofing, replay, message tampering and unauthorised access during UAV-to-GCS authentication?
+    \item \textbf{RQ2:} What authentication latency, throughput, computational, memory and communication overhead does the proposed mechanism introduce compared with an X.509 certificate-based PKI baseline?
+    \item \textbf{RQ3:} How does the proposed mechanism perform as the number of registered UAV identities and concurrent authentication requests increases?
+    \item \textbf{RQ4:} Under what operational conditions do the security, auditability and resilience benefits of blockchain justify its additional performance and deployment costs?
+\end{enumerate}
+
+RQ1 is evaluated through adversarial test cases and a security analysis against the threat model. RQ2 and RQ3 are evaluated quantitatively through repeated controlled experiments. RQ4 is answered by synthesising the security findings with the measured performance and resource costs; it is not treated as an assumption that blockchain must outperform PKI.
+
+For the quantitative comparison, the following null and alternative hypotheses are defined:
+
+\begin{description}
+    \item[$H_{0L}$:] There is no statistically significant difference in end-to-end authentication-decision latency between the permissioned-blockchain mechanism and the X.509 PKI baseline under an equivalent workload.
+    \item[$H_{1L}$:] There is a statistically significant difference in end-to-end authentication-decision latency between the two mechanisms.
+    \item[$H_{0T}$:] There is no statistically significant difference in sustainable authentication throughput between the two mechanisms.
+    \item[$H_{1T}$:] There is a statistically significant difference in sustainable authentication throughput between the two mechanisms.
+    \item[$H_{0R}$:] Increasing the number of concurrent requests does not significantly change latency, failure rate or resource consumption for the proposed mechanism.
+    \item[$H_{1R}$:] Increasing the number of concurrent requests significantly changes at least one of these outcomes.
+\end{description}
+
+No directional alternative is imposed before measurement. Although blockchain confirmation and state replication are expected to introduce additional work, the size and operational significance of the difference must be established experimentally. Security hypotheses are evaluated as explicit acceptance criteria rather than as claims of absolute security. For each implemented attack, a valid defence requires the malicious request to be rejected without causing an unauthorised state change, while legitimate requests under the same configuration must continue to be accepted.
+
+\section{Comparative Experimental Design}
+\label{sec:comparative-design}
+The experiment uses a repeated-measures comparative design. Each workload configuration is executed against both authentication mechanisms on the same host or on equivalently provisioned hosts. The mechanisms are tested using the same population of logical UAV identities, request payloads, cryptographic security level, concurrency setting and measurement interval. The order of mechanism and scenario execution is rotated or randomised where practical to reduce systematic bias caused by thermal conditions, caching or background processes.
+\noindent
+Two latency boundaries are reported for the blockchain mechanism. The first is \emph{decision latency}: the time from the GCS's receipt of an authentication request to the GCS's acceptance or rejection decision after signature and identity status verification. The second is \emph{commit latency}: the additional time required for a state-changing audit transaction, when enabled, to receive a transaction receipt. This distinction is necessary because an X.509 verification normally produces a local decision without waiting for distributed consensus. Combining both blockchain stages into one value without reporting their components would make it impossible to determine whether consensus is on the critical authentication path.The use of controlled factors, repeated trials and comparable workloads follows established computer-system performance evaluation principles\cite{Jain1991Performance}.
+
+\subsection{X.509 PKI Baseline}
+\label{subsec:pki-baseline}
+
+The baseline uses an X.509 certificate-based trust model. A project certificate authority issues a certificate that binds each UAV identifier to a public key\cite{RFC5280}. During authentication, the GCS verifies the certificate chain, checks the certificate validity period and revocation status, verifies the UAV's signature over the fresh challenge and session fields, and applies the same logical access rule used by the blockchain mechanism. A request is accepted only if all checks succeed.
+\noindent
+The revocation method used in the final implementation must be stated explicitly as either a locally available certificate revocation list or an online certificate-status service. If an online status check is used, its communication time is included in the baseline decision latency. If a cached revocation list is used, the cache age and update interval are recorded. This prevents an unfair comparison in which the PKI mechanism is charged for remote network access while the blockchain mechanism uses a local node, or vice versa. Certificate revocation is evaluated using either a certificate revocation list or the Online Certificate Status Protocol, depending on
+the implemented baseline \cite{RFC5280,RFC6960}.
+\noindent
+The baseline is not described as inherently centralised at every verification step. Certificate-path verification can occur locally; centralisation arises principally from certificate issuance, status governance and the selected revocation architecture. This distinction is retained throughout the evaluation so that observed differences are attributed to the implemented systems rather than to an inaccurate characterisation of PKI.
+
+\subsection{Permissioned Blockchain Mechanism}
+\label{subsec:blockchain-mechanism}
+
+The proposed mechanism stores the binding between a UAV identifier, its authorised public key, its status and its permitted role in a smart-contract-controlled registry. An authorised account creates or updates identity records. During authentication, the GCS verifies the signed challenge and queries the registry for the current identity and authorisation state. State-changing operations, including registration and revocation, require an authorised blockchain transaction. If successful authentication attempts are also recorded on-chain, their confirmation time and gas usage are reported separately from the immediate authentication decision.
+\noindent
+The blockchain test network uses a fixed permissioned configuration for comparisons at a given experimental level. Validator count, consensus settings, block-production settings, account allocation and node placement are recorded as part of the experimental configuration. The research treats Ganache or an equivalent local Ethereum environment as a prototype platform, not as evidence of production-network performance. Ethereum represents application state through a transaction-based state
+machine, while state-changing contract operations are accounted for
+using gas \cite{Wood2025Ethereum}.Ganache is intended to provide a deterministic personal blockchain for Ethereum development and testing; consequently, its results should not be treated as measurements of production-network performance\cite{GanacheDocumentation}. And Gas is reported in execution units; any conversion to monetary cost is illustrative and is not treated as a measured deployment cost.
+
+\subsection{Controlled Variables}
+\label{subsec:controlled-variables}
+
+The following factors are held constant within each paired comparison:
+
+\begin{itemize}
+    \item hardware allocation, operating system and background-service policy;
+    \item client and server programming language and runtime versions;
+    \item logical UAV identifiers and authentication request payload size;
+    \item cryptographic security level and challenge--response message fields;
+    \item number of issued requests, concurrency level and test duration;
+    \item network placement and any configured delay or packet-loss profile;
+    \item warm-up procedure and measurement boundaries;
+    \item logging level and resource-monitoring interval; and
+    \item success criteria for valid and adversarial authentication attempts.
+\end{itemize}
+\noindent
+Platform-specific operations cannot be made identical. Ethereum commonly uses the secp256k1 elliptic curve, whereas an X.509 implementation may use another 256-bit elliptic curve. Where identical algorithms are not supported by both platforms, the study uses an equivalent contemporary security level and reports the difference as a 7limita4tion. Setup operations are separated from steady-state authentication. Digital-
+`   ``signature parameters are selected at a comparable contemporary security level, following recognised digital-signature guidance
+\cite{NISTFIPS1865}.Certificate issuance and blockchain registration are measured independently because including either process in only one mechanism's per-request latency would distort the comparison.
+
+\subsection{Independent and Dependent Variables}
+\label{subsec:variables}
+
+The primary independent variable is the authentication mechanism: X.509 PKI or permissioned blockchain. Additional independent variables are workload concurrency, the number of registered UAV identities, authentication-request type and identity status. Request type includes valid authentication, spoofing, replay, tampering, unauthorised access and revoked-identity use.
+
+The dependent variables are authentication-decision latency, optional blockchain commit latency, throughput, failure rate, false-acceptance rate, false-rejection rate, attack rejection rate, CPU utilisation, memory consumption, network bytes transferred and smart-contract gas usage. The number of registered identities is examined separately from concurrent request volume because identity-registry size and transaction contention may influence the system through different mechanisms.
+
+The planned workload matrix should be adjusted only if pilot testing demonstrates a documented resource limitation. A suitable initial matrix is shown in Table~\ref{tab:workload-matrix}.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Planned experimental factors and levels}
+    \label{tab:workload-matrix}
+    \begin{tabular}{|p{0.29\textwidth}|p{0.58\textwidth}|}
+        \hline
+        \textbf{Factor} & \textbf{Planned levels} \\
+        \hline
+        Authentication mechanism & X.509 PKI; permissioned blockchain \\
+        \hline
+        Registered UAV identities & 10, 50, 100, 250 and 500 \\
+        \hline
+        Concurrent clients & 1, 5, 10, 25 and 50 \\
+        \hline
+        Request type & Valid, spoofed, replayed, tampered, unauthorised and revoked \\
+        \hline
+        Authentication logging & Decision only; decision plus blockchain audit commit, where implemented \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{Experimental Scenarios}
+\label{sec:experimental-scenarios}
+
+Each scenario begins from a documented system state. Legitimate identities are enrolled before measurement, revocation status is reset as required, the blockchain reaches a stable state, and caches are treated consistently. A warm-up run is performed before recorded trials to reduce one-off effects from runtime initialisation, contract deployment or connection establishment. Setup failures are recorded separately from authentication failures.
+
+\subsection{Normal Authentication}
+\label{subsec:normal-authentication}
+
+A registered and active UAV receives a fresh challenge, signs the required authentication fields with its legitimate private key and submits the response to the GCS. The expected outcome is acceptance. This scenario establishes the normal latency, throughput and resource baseline for each mechanism. Both sequential and concurrent workloads are used. Legitimate requests must not be rejected because of stale state created by a preceding adversarial test.
+
+\subsection{UAV Spoofing}
+\label{subsec:spoofing-scenario}
+
+The attacker submits an authentication request containing either an unregistered identifier or a legitimate identifier signed using an unauthorised private key. The expected outcome is rejection before access is granted. The experiment distinguishes identity enumeration from successful impersonation: learning that an identifier exists is not equivalent to proving possession of its registered private key.
+
+\subsection{Replay Attack}
+\label{subsec:replay-scenario}
+
+A valid authentication exchange is captured and the signed response is submitted again after the original session has completed. The replay may be sent unchanged or associated with a new connection. The expected outcome is rejection because the challenge, nonce, timestamp or session identifier is no longer fresh. The exact freshness mechanism and its permitted time window are defined in Chapter~\ref{chap:proposed-scheme}.
+
+\subsection{Message Tampering}
+\label{subsec:tampering-scenario}
+
+One or more signed fields, such as the UAV identifier, challenge, requested role or session identifier, are modified after signature generation. The expected outcome is signature-verification failure and rejection without an authorised state change. If any routing or transport metadata is intentionally excluded from the signature, that boundary is documented rather than being described as protected by the protocol.
+
+\subsection{Unauthorised and Revoked Access}
+\label{subsec:unauthorised-scenario}
+
+Two related cases are tested. In the first, a cryptographically valid UAV requests an operation outside its assigned role. In the second, a previously legitimate UAV attempts to authenticate after its identity has been revoked. Both requests are expected to be rejected. The elapsed time between the revocation operation and enforceable rejection is recorded because it represents an operational security property rather than a purely functional outcome.
+
+\subsection{Scalability and Load}
+\label{subsec:scalability-scenario}
+
+The number of registered identities and concurrent authentication clients is increased according to Table~\ref{tab:workload-matrix}. The aim is not to claim Internet-scale performance from a local prototype, but to locate the point at which latency, queueing, failure rate or resource use begins to degrade materially. The workload generator uses the same request schedule for both mechanisms. Offered load and completed throughput are recorded separately so that rejected or timed-out requests are not hidden by a throughput average.
+
+\section{Evaluation Metrics}
+\label{sec:evaluation-metrics}
+
+Authentication-decision latency is measured using a monotonic clock from the instant the GCS receives a complete request until it produces a final decision. Client-observed end-to-end latency is also recorded where transport overhead is relevant. For the blockchain mechanism, transaction commit latency is measured separately from submission until a successful or failed receipt is available. Latencies are reported in milliseconds using the mean, median, 95th percentile and 99th percentile, together with a measure of dispersion.
+
+Throughput is the number of completed authentication decisions divided by the measured interval:
+
+\begin{equation}
+    \mathrm{Throughput} = \frac{N_{\mathrm{completed}}}{T_{\mathrm{measurement}}}.
+\end{equation}
+
+Failure rate is calculated as:
+
+\begin{equation}
+    \mathrm{Failure\;Rate} = \frac{N_{\mathrm{timeout}} + N_{\mathrm{system\;error}}}{N_{\mathrm{submitted}}} \times 100\%.
+\end{equation}
+
+Expected security rejections are not counted as system failures. They are evaluated through the attack rejection rate:
+
+\begin{equation}
+    \mathrm{Attack\;Rejection\;Rate} = \frac{N_{\mathrm{malicious\;requests\;rejected}}}{N_{\mathrm{malicious\;requests\;submitted}}} \times 100\%.
+\end{equation}
+
+False acceptance occurs when an adversarial request is accepted; false rejection occurs when a valid request is rejected. Reporting both measures prevents a mechanism from appearing secure merely because it rejects most requests. For a correctly implemented deterministic authentication policy, the target is zero false acceptances and zero false rejections within the defined test suite, although the observed result must be reported rather than assumed.
+
+CPU utilisation is recorded for the GCS, authentication service and blockchain node processes using a fixed sampling interval. Memory consumption is reported using resident-set size or another explicitly named measure. Network overhead includes bytes sent and received per successful and rejected authentication attempt. Where monitoring tools add measurable overhead, the same instrumentation is applied to both mechanisms.
+
+Gas usage is obtained from receipts for state-changing smart-contract operations, including registration, revocation and audit logging where applicable. Read-only calls are identified separately because they do not consume transaction gas when executed locally, although they still consume computation and RPC resources. Gas units are not presented as energy consumption or monetary cost. A monetary illustration may be calculated using an explicitly stated gas price, but it remains a scenario estimate rather than an experimental measurement from the private network.
+
+\section{Data Collection and Statistical Analysis}
+\label{sec:data-analysis}
+
+Each experimental event is assigned a unique run identifier, mechanism identifier, scenario, workload level and timestamp. Client logs record request submission and response receipt; server logs record decision start and completion; blockchain logs record transaction hash, block or receipt information and gas used. Resource samples are associated with the same run identifier. Sensitive private keys are not written to measurement logs.
+
+Pilot tests are first used to verify correctness, select time-out limits and confirm that the monitoring resolution is adequate. Pilot measurements are excluded from the final analysis. For the main evaluation, each configuration is executed in at least 30 independent trials, with each trial containing a fixed batch of authentication attempts sufficient to estimate tail latency. The final number of attempts per trial, warm-up requests and trial duration must be recorded in Chapter~\ref{chap:evaluation} and in the experiment configuration files. Random seeds are fixed and disclosed when random selection is used, while unique nonces and session values are generated for every normal authentication attempt.
+
+Raw observations are retained rather than storing only averages. Invalid measurements caused by a documented instrumentation failure may be excluded, but the exclusion rule is defined before result inspection and the number of exclusions is reported. Security failures, time-outs and extreme latency values are not removed merely because they are inconvenient; they are part of the behaviour under evaluation.
+
+Descriptive statistics are calculated for every mechanism--scenario--workload combination. Distribution shape is inspected before inferential testing because authentication latency is commonly skewed under queueing. Where assumptions of approximate normality and comparable variance are reasonable, a paired or Welch-type comparison is used as appropriate. Otherwise, a non-parametric comparison such as the Mann--Whitney test is used\cite{MannWhitney1947}. Confidence intervals are produced through an appropriate analytical or bootstrap method\cite{EfronTibshirani1993}. In addition to statistical significance, an effect size is reported so that a small but statistically detectable difference is not automatically treated as operationally important. Where multiple workload levels are compared, a correction such as the Holm procedure is applied to control the family-wise error rate. The significance threshold is fixed at $\alpha = 0.05$ before analysis\cite{Holm1979}.
+
+RQ4 is evaluated through a structured synthesis rather than a single hypothesis test. The measured performance costs are considered alongside attack outcomes, revocation behaviour, auditability, trust distribution and operational complexity. Conclusions are stated conditionally. For example, a permissioned ledger may be more defensible in a multi-organisation setting that requires a shared identity history, while a single-operator deployment may favour PKI if the measured blockchain overhead produces no necessary governance benefit.
+
+\section{Validity, Reliability and Reproducibility}
+\label{sec:validity-reliability}
+
+\subsection{Internal validity}
+Internal validity concerns whether observed differences are caused by the authentication mechanisms rather than uncontrolled conditions. The study uses the same workload generator, hardware allocation, request semantics, logging level and network placement for paired comparisons. Test order is rotated, background processes are restricted, warm-up is applied consistently and setup activity is excluded from steady-state authentication measurements. Component timings are recorded so that blockchain RPC, signature verification, queueing and transaction confirmation are not collapsed into an unexplained total.
+\subsection{Construct validity}
+Construct validity concerns whether the measurements represent the concepts claimed in the research questions. Authentication security is not inferred from latency or ledger immutability. It is evaluated through defined adversarial cases and analysis of the protocol's security properties. Gas measures EVM execution accounting, not electrical energy. A local Ganache transaction receipt does not represent public-Ethereum finality. Similarly, a successful signature check proves possession of a key but does not prove that the physical UAV has not been captured. These distinctions are maintained in Chapters~\ref{chap:evaluation} and~\ref{chap:security-analysis}.
+
+\subsubsection{External validity} 
+External validity is limited by the proof-of-concept environment. Software-based UAV clients, local or laboratory networking and a private Ethereum emulator cannot reproduce every processing, radio and connectivity condition of a deployed delivery fleet. Results are therefore interpreted as evidence about the implemented architecture and tested workload range. Claims about real-world deployment require confirmation on representative UAV hardware, a multi-host validator network and controlled wireless links.
+
+\subsubsection{Conclusion validity} 
+Conclusion validity is supported through repeated trials, complete reporting of failures, confidence intervals and effect sizes. The analysis avoids drawing broad conclusions from a single mean or one successful attack demonstration. The tested range, saturation point and uncertainty are reported so that the absence of failure under a limited workload is not described as unlimited scalability.
+
+\subsubsection{Reliability and reproducibility} 
+Reliability and reproducibility are supported by preserving source code, smart-contract code, certificate-generation scripts, deployment configuration, dependency versions, workload definitions and analysis scripts. Each result should be reproducible from a documented command or experiment configuration. Random seeds, time-out values, blockchain settings, certificate parameters and the exact commit of the evaluated implementation are recorded. Secrets and live private keys are excluded; reproducible test credentials are generated specifically for the experimental environment.
+
+\section{Chapter Summary}
+\label{sec:methodology-summary}
+This chapter has established a design-science and controlled experimental methodology for evaluating UAV-to-GCS authentication. The comparison uses a permissioned Ethereum mechanism and an X.509 PKI baseline that provide equivalent high-level identity, proof-of-possession, revocation and access-decision functions. It defines the research questions and hypotheses, separates controlled, independent and dependent variables, and specifies normal, adversarial and scalability scenarios. It also distinguishes immediate authentication-decision latency from optional blockchain commit latency, thereby preserving a transparent comparison with conventional certificate verification.
+\noindent The evaluation combines latency, throughput, reliability, resource, communication and gas measurements with explicit spoofing, replay, tampering, unauthorised-access and revocation tests. Repeated trials, raw-data retention, confidence intervals, effect sizes and documented experimental configurations support the credibility and reproducibility of the findings. Building on this methodology, Chapter~\ref{chap:proposed-scheme} defines the threat model, architecture, protocols, smart contracts and implementations that are subjected to the evaluation.

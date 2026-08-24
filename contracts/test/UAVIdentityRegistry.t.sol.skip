@@ -1,0 +1,8 @@
+# SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+// Contract behavioural tests are executed with pytest against the local Besu
+// network (tests/test_blockchain_integration.py) and by compile-time ABI checks
+// (tests/test_contract_compile.py). This file documents the intended cases:
+// authorised registration, unauthorised registration, duplicate registration,
+// revocation, key update and event emission.

@@ -1,0 +1,105 @@
+% Batch 4: Sections 5.8--5.14
+% Data sources: 05_system_metrics_by_run.csv, 04_comm_overhead_summary.csv,
+% 06_audit_observations.csv, 01_environment.json, 02_all_summaries_enriched.csv
+
+\section{CPU and Memory Consumption}
+\label{sec:ch5-resources}
+
+Host CPU and resident set size (RSS) were sampled at 0.5~s intervals during each run (\texttt{system\_metrics.csv}). Table~\ref{tab:ch5-resources} reports mean and maximum values aggregated across all matrix runs by mechanism.
+
+The blockchain mechanism exhibited higher mean CPU utilisation (58.9\%) than X.509 (37.0\%) under the shared matrix workloads, consistent with additional JSON-RPC and contract-call activity. Mean RSS was comparable (blockchain 221.6~MiB; X.509 219.6~MiB), indicating that memory footprint differences were modest relative to Docker Desktop and Python runtime overhead on the test host.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Mean resource consumption aggregated across matrix runs}
+    \label{tab:ch5-resources}
+    \begin{tabular}{|l|r|r|r|r|}
+        \hline
+        \textbf{Mechanism} & \textbf{Mean CPU (\%)} & \textbf{Max CPU (\%)} & \textbf{Mean RSS (MiB)} & \textbf{Max RSS (MiB)} \\
+        \hline
+        X.509 PKI & 37.0 & -- & 219.6 & -- \\
+        Blockchain & 58.9 & -- & 221.6 & -- \\
+        \hline
+    \end{tabular}
+\end{table}
+
+These samples include Docker Desktop and operating-system background activity; they support comparative analysis under identical host conditions rather than isolated micro-benchmarking.
+
+\section{Network Communication Overhead}
+\label{sec:ch5-comm}
+
+Application-layer communication overhead was derived from per-request \texttt{request\_bytes} and \texttt{response\_bytes} fields in the observation logs. Across scalability runs, mean signed-request sizes were effectively identical between mechanisms (X.509: 239.0~bytes; blockchain: 239.0~bytes). Mean response sizes differed: X.509 decisions occupied 8.0~bytes, whereas blockchain decisions occupied 17.5~bytes on average, reflecting additional status encoding on the registry path.
+
+For the blockchain mechanism, read-only registry access incurred a mean \texttt{contract\_call} duration of approximately 1.87~ms per request (derived from \texttt{contract\_call\_ns}), reported separately from overall \texttt{decision\_latency} because it isolates the \texttt{eth\_call} component. X.509 identity lookup and certificate validation are embedded in \texttt{identity\_lookup\_ns} and \texttt{certificate\_validation\_ns} on the PKI path.
+
+\section{Smart Contract Execution and Gas Overhead}
+\label{sec:ch5-gas}
+
+Gas figures are reported in EVM execution units on the private Besu network (gas price zero); no monetary conversion is performed.
+
+Contract deployment of the identity registry consumed \textbf{1\,298\,376} gas (deployment transaction recorded in \texttt{environment.json}, block~1164). Steady-state authentication used read-only \texttt{eth\_call} operations, which do not consume transaction gas when executed locally against the node.
+
+Optional audit logging was evaluated in matrix step~53 (\texttt{audit\_tx\_enabled=true}, $n=10$, concurrency~1). For measured non-warm-up audit attempts, mean audit submission time was 10.7~ms and mean audit confirmation time was 1925.5~ms (1 confirmation block configured). Recorded \texttt{gas\_used} per audit transaction was \textbf{30\,291} units. Decision latency in that run remained on the authentication path and did not include confirmation wait time by design (Section~\ref{sec:ch5-workloads}).
+
+\section{Scalability Results}
+\label{sec:ch5-scalability}
+
+Scalability was assessed across $n \in \{10,50,100,250,500\}$ and $c \in \{1,5,10,25,50\}$ using \texttt{valid\_active} workloads.
+
+For \textbf{X.509}, mean accepted decision latency at $c=1$ remained stable near 3.5~ms as $n$ increased from 10 to 500, indicating that local CRL/certificate-store size did not dominate authentication time at these population levels. Latency increased with concurrency, reaching mean 80.5~ms at $n=500$, $c=50$. Completed throughput for $n \geq 100$ often approached 59~rps, suggesting host saturation under the threaded client model.
+
+For \textbf{blockchain}, scalability runs recorded zero acceptances (Section~\ref{sec:ch5-normal-auth}); \texttt{all\_finished} latencies therefore cannot be interpreted as successful authentication service time. % TODO: Add measured blockchain scalability curves after valid_active re-run.
+
+% TODO: Figure 5.Y — X.509 mean accepted latency vs registered identities at c=1,25,50
+
+\section{Comparison with the X.509 PKI Baseline}
+\label{sec:ch5-comparison}
+
+Table~\ref{tab:ch5-comparison} condenses mechanism differences observed in this evaluation under the stated limitations (local loopback, single host, matrix data quality caveats).
+
+\begin{table}[htbp]
+    \centering
+    \caption{Qualitative comparison under the executed matrix}
+    \label{tab:ch5-comparison}
+    \begin{tabular}{|p{0.22\textwidth}|p{0.34\textwidth}|p{0.34\textwidth}|}
+        \hline
+        \textbf{Dimension} & \textbf{X.509 PKI} & \textbf{Permissioned blockchain} \\
+        \hline
+        Normal auth acceptance (scalability matrix) & 100\% (750/750 measured reps across 25 runs) & 0\% (0/750); systematic false rejections \\
+        \hline
+        Adversarial false acceptances & 0 across security battery & 0 across security battery \\
+        \hline
+        Mean CPU (matrix aggregate) & 37.0\% & 58.9\% \\
+        \hline
+        Mean response size & 8.0~B & 17.5~B \\
+        \hline
+        Registry access & Local cert/CRL validation & \texttt{eth\_call} $\approx$ 1.87~ms mean \\
+        \hline
+        Audit trail & Off-chain logs only & Optional on-chain audit tx; $\approx$ 1.93~s confirmation \\
+        \hline
+    \end{tabular}
+\end{table}
+
+A statistically significant latency or throughput advantage for either mechanism on \emph{successful} normal authentication cannot be concluded for the blockchain path from the present matrix because no accepted blockchain \texttt{valid\_active} observations were recorded. X.509 results support RQ2/RQ3 characterisation for the baseline; blockchain performance cost remains % TODO: Add measured results here after valid_active re-run.
+
+\section{Statistical Reliability of the Results}
+\label{sec:ch5-stats}
+
+Each scenario was repeated 30 times after 2 warm-up attempts. Default summaries exclude warm-ups (\texttt{warmup==false}). For X.509 accepted \texttt{valid\_active} requests with $n \geq 2$, 95\% confidence intervals for mean decision latency were computed with a percentile bootstrap (\texttt{scipy.stats.bootstrap}, 10\,000 resamples, method \texttt{percentile}, seed derived from the run configuration). CI widths at $n=500$, $c=1$ were approximately $\pm$0.65~ms around a 3.54~ms mean, indicating relatively tight uncertainty at low concurrency. At $n=500$, $c=50$, the CI widened to [58.1, 105.9]~ms around an 80.5~ms mean, reflecting higher variance under contention.
+
+Formal hypothesis tests ($H_{0L}$, $H_{0T}$, $H_{0R}$ from Chapter~\ref{chap:research-design-methodology}) were not applied pairwise to blockchain versus X.509 normal-authentication latencies in this chapter because the blockchain acceptance precondition was not met. Security-battery outcomes are reported as acceptance criteria (false acceptances, expectation-met rates) rather than as parametric hypothesis tests.
+
+\section{Chapter Summary}
+\label{sec:ch5-summary}
+
+This chapter evaluated the permissioned-blockchain authentication mechanism against an X.509 PKI baseline using a 53-step workload matrix on a local Windows host with four Besu QBFT validators.
+
+\textbf{RQ1 (security).} Both mechanisms prevented false acceptances in the executed adversarial scenarios. X.509 satisfied all expected outcomes in the security battery, including legitimate authentication. Blockchain blocked malicious traffic in most scenarios but exhibited false rejections on legitimate \texttt{valid\_active} attempts and incorrect reason codes on some unauthorised-operation tests within the same battery.
+
+\textbf{RQ2 (overhead).} X.509 exhibited mean accepted decision latencies of approximately 3.5~ms at concurrency~1 across identity scales up to 500, rising to 80.5~ms mean at $n=500$, $c=50$. Blockchain incurred higher aggregate CPU usage and additional \texttt{eth\_call} latency, but successful normal-authentication latency for blockchain cannot be quantified from the present matrix.
+
+\textbf{RQ3 (scalability).} X.509 latency at low concurrency was insensitive to registry size up to 500 identities; throughput saturated near 59~rps on the eight-core host for larger $n$. Blockchain scalability under successful authentication remains unverified pending corrected runs.
+
+\textbf{RQ4 (conditional synthesis).} On this single-host prototype, the X.509 baseline delivered reliable normal authentication with lower CPU cost and simpler failure modes. Blockchain may still offer value where an append-only audit trail justifies optional commit latency (mean confirmation $\approx$ 1.93~s in the audit run) and deployment gas, but the measured matrix does not demonstrate that those benefits outweigh the observed normal-path reliability defect and higher resource use \emph{without further correction and re-measurement}.
+
+Key limitations---loopback networking, co-located validators, Python~3.13, absence of RF delay, and Docker-inclusive resource samples---are documented in \texttt{LIMITATIONS.md} and bound the generalisation of all numerical findings.

@@ -1,0 +1,62 @@
+% Batch 2b: Sections 5.6 and 5.7
+% Data source: results/chapter5_export/02_all_summaries_enriched.csv
+
+\section{Authentication Latency Results}
+\label{sec:ch5-latency}
+
+Decision latency is the interval from GCS receipt of a complete authentication request until an accept/reject decision (Section~\ref{sec:ch5-workloads}). Table~\ref{tab:ch5-latency} reports descriptive statistics for \textbf{accepted} X.509 requests only (\texttt{latency\_set = accepted\_only}). Blockchain \texttt{accepted\_only} rows are omitted because $n_{\mathrm{accepted}} = 0$ for all scalability runs; the \texttt{all\_finished} blockchain latencies mix rejections and cannot be interpreted as successful authentication service time.
+
+At low concurrency ($c=1$), X.509 mean decision latency remained near 3.5~ms regardless of registry size ($n=10$: 3.51~ms; $n=100$: 3.47~ms; $n=500$: 3.54~ms), with 95\% bootstrap confidence intervals approximately [2.9, 4.2]~ms. At $c=25$, mean latency increased to 29.7~ms ($n=10$), 33.4~ms ($n=100$), and 61.5~ms ($n=500$). At $c=50$ and $n=500$, mean latency reached 80.5~ms (median 52.9~ms, p95 230.5~ms, CI$_{95}$ [58.1, 105.9]~ms), indicating contention on the eight-core host.
+
+\begin{table}[htbp]
+    \centering
+    \caption{X.509 authentication-decision latency (ms) for accepted \texttt{valid\_active} requests}
+    \label{tab:ch5-latency}
+    \small
+    \begin{tabular}{|c|c|r|r|r|r|r|}
+        \hline
+        \textbf{$n$} & \textbf{$c$} & \textbf{Mean} & \textbf{Median} & \textbf{p95} & \textbf{p99} & \textbf{CI$_{95}$ low--high} \\
+        \hline
+        10  & 1  & 3.51 & 2.68 & 6.37 & 8.66 & 2.97--4.10 \\
+        10  & 25 & 29.69 & 32.22 & 49.58 & -- & 25.55--33.86 \\
+        10  & 50 & 7.54 & 7.23 & 13.36 & -- & 6.42--8.71 \\
+        100 & 1  & 3.47 & 2.92 & 5.93 & 8.66 & 3.06--3.95 \\
+        100 & 25 & 33.41 & 33.14 & 52.64 & -- & 29.47--37.55 \\
+        100 & 50 & 37.56 & 35.51 & 65.77 & -- & 32.52--42.88 \\
+        500 & 1  & 3.54 & 2.72 & 5.93 & 8.66 & 2.94--4.23 \\
+        500 & 25 & 61.52 & 61.43 & 117.51 & -- & 50.79--72.97 \\
+        500 & 50 & 80.45 & 52.92 & 230.45 & -- & 58.08--105.90 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+% TODO: Figure 5.X — X.509 mean decision latency vs concurrency for n=10,100,500
+
+For the blockchain mechanism under the same matrix: % TODO: Add measured accepted-only latency after re-run — current matrix records 0 acceptances across all valid_active scalability runs.
+
+\section{Throughput and Failure Rate}
+\label{sec:ch5-throughput}
+
+Completed throughput (\texttt{completed\_throughput\_rps}) was computed as finished authentication attempts divided by the measured batch wall-clock interval (including expected rejections where applicable). Table~\ref{tab:ch5-throughput} lists representative X.509 values.
+
+X.509 throughput at $n=10$ ranged from 17.9~rps ($c=50$) to 59.2~rps ($c=25$). At $n \in \{100,250,500\}$, many configurations achieved approximately 59~rps (e.g.\ $n=500$, $c=50$: 59.5~rps; run \texttt{n500-identities\_c50-conc\_mech-x509-1backend\_valid-active\_r30\_audit-off\_20260820T022732Z}). Blockchain scalability runs reported lower completed throughputs (e.g.\ 18.7~rps at $n=500$, $c=1$) but, given zero acceptances, these figures reflect rejected exchanges rather than successful authentication capacity.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Completed throughput (requests per second) for \texttt{valid\_active} scalability runs}
+    \label{tab:ch5-throughput}
+    \begin{tabular}{|c|c|r|r|}
+        \hline
+        \textbf{$n$} & \textbf{$c$} & \textbf{X.509 (rps)} & \textbf{Blockchain (rps)} \\
+        \hline
+        10  & 1  & 28.25 & 19.97 \\
+        10  & 25 & 59.16 & 19.97 \\
+        100 & 1  & 59.38 & 19.97 \\
+        100 & 50 & 59.64 & 19.97 \\
+        500 & 1  & 59.57 & 18.74 \\
+        500 & 50 & 59.52 & 18.72 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+As noted in Section~\ref{sec:ch5-normal-auth}, \texttt{failure\_rate\_pct} was 0.0 for all reported scalability runs because no authentication timeouts or internal errors were recorded; false rejections on the blockchain path are reported separately and must not be conflated with failure rate.

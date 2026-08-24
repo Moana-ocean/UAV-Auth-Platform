@@ -1,0 +1,73 @@
+% Batch 3: Section 5.5 adversarial test results
+% Data source: results/chapter5_export/03_security_by_scenario.csv
+
+\section{Adversarial Test Results}
+\label{sec:ch5-adversarial}
+
+Adversarial behaviour was evaluated with the security battery (matrix steps 1--2): $n=10$ identities, concurrency~1, 30 repetitions per scenario (plus warm-ups), separately for X.509 and blockchain. An expected rejection with \texttt{expectation\_met=true} constitutes a \textbf{passed} security test. False acceptances (malicious request accepted) and false rejections (legitimate request rejected) are reported explicitly. Table~\ref{tab:ch5-security-summary} summarises outcomes by scenario.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Security battery summary by mechanism and scenario (30 measured repetitions each)}
+    \label{tab:ch5-security-summary}
+    \footnotesize
+    \begin{tabular}{|l|l|r|r|r|r|}
+        \hline
+        \textbf{Mech.} & \textbf{Scenario} & \textbf{Met (\%)} & \textbf{False acc.} & \textbf{False rej.} & \textbf{Mean lat. (ms)} \\
+        \hline
+        x509 & unknown\_uav & 100.0 & 0 & 0 & 1.46 \\
+        x509 & impersonation\_wrong\_key & 100.0 & 0 & 0 & 2.81 \\
+        x509 & replay & 100.0 & 0 & 0 & 0.06 \\
+        x509 & modified\_nonce & 100.0 & 0 & 0 & 0.03 \\
+        x509 & modified\_uav\_id & 100.0 & 0 & 0 & 5.36 \\
+        x509 & modified\_operation & 100.0 & 0 & 0 & 3.25 \\
+        x509 & unauthorised\_operation & 100.0 & 0 & 0 & 3.17 \\
+        x509 & malformed & 100.0 & 0 & 0 & 0.01 \\
+        x509 & revoked\_uav & 100.0 & 0 & 0 & 8.39 \\
+        x509 & expired\_certificate & 100.0 & 0 & 0 & 0.27 \\
+        x509 & untrusted\_issuer & 100.0 & 0 & 0 & 1.27 \\
+        x509 & expired\_challenge & 100.0 & 0 & 0 & 0.26 \\
+        x509 & valid\_active & 100.0 & 0 & 0 & 4.03 \\
+        \hline
+        blockchain & unknown\_uav & 100.0 & 0 & 0 & 52.01 \\
+        blockchain & impersonation\_wrong\_key & 100.0 & 0 & 0 & 40.63 \\
+        blockchain & replay & 100.0 & 0 & 0 & 0.05 \\
+        blockchain & modified\_nonce & 100.0 & 0 & 0 & 0.03 \\
+        blockchain & modified\_uav\_id & 100.0 & 0 & 0 & 48.68 \\
+        blockchain & modified\_operation & 100.0 & 0 & 0 & 57.17 \\
+        blockchain & unauthorised\_operation & 0.0 & 0 & 0 & 38.91 \\
+        blockchain & malformed & 100.0 & 0 & 0 & 0.01 \\
+        blockchain & revoked\_uav & 100.0 & 0 & 0 & 36.46 \\
+        blockchain & rpc\_unavailable & 100.0 & 0 & 0 & 7010.71 \\
+        blockchain & expired\_challenge & 100.0 & 0 & 0 & 0.06 \\
+        blockchain & valid\_active & 0.0 & 0 & 30 & 37.23 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection{UAV Spoofing Test Results}
+\label{sec:ch5-spoofing}
+
+Spoofing was tested with \texttt{unknown\_uav} (unregistered identity) and \texttt{impersonation\_wrong\_key} (registered identity, incorrect private key). Both mechanisms rejected all 30 attempts per scenario with zero false acceptances. X.509 mean decision latencies were 1.46~ms and 2.81~ms respectively; blockchain latencies were higher at 52.01~ms and 40.63~ms, reflecting registry lookup via \texttt{eth\_call} before rejection.
+
+\subsection{Replay Attack Test Results}
+\label{sec:ch5-replay}
+
+Replay attempts reused a previously accepted signed payload. All 30 repetitions were rejected with \texttt{expectation\_met=true} for both mechanisms (X.509 mean 0.06~ms; blockchain mean 0.05~ms). No false acceptances were observed.
+
+\subsection{Message Tampering Test Results}
+\label{sec:ch5-tampering}
+
+Tampering scenarios altered the nonce (\texttt{modified\_nonce}), UAV identifier (\texttt{modified\_uav\_id}), or requested operation (\texttt{modified\_operation}). Each scenario produced 100\% expected rejections with zero false acceptances for both mechanisms. Mean latencies remained below 6~ms for X.509 and between 48.7~ms and 57.2~ms for blockchain on these tests.
+
+\subsection{Unauthorised Access Test Results}
+\label{sec:ch5-unauthorised}
+
+Unauthorised access was tested with \texttt{unauthorised\_operation} (role-limited identity requesting a disallowed operation) and \texttt{malformed} requests. The X.509 baseline rejected all attempts with the expected reason codes (100\% expectation met). The blockchain path rejected all malicious requests (zero false acceptances) but returned \texttt{INVALID\_SIGNATURE} rather than \texttt{UNAUTHORISED\_OPERATION} in the unauthorised-operation scenario, yielding 0\% expectation-met rate despite correct reject decisions. \texttt{malformed} requests were rejected in 100\% of cases on both paths. The blockchain-only \texttt{rpc\_unavailable} scenario confirmed graceful failure when the registry RPC endpoint was unreachable (mean latency approximately 7011~ms, consistent with configured RPC timeout behaviour).
+
+\subsection{Revoked Identity Test Results}
+\label{sec:ch5-revoked}
+
+Revocation-related tests included \texttt{revoked\_uav}, \texttt{expired\_challenge}, and X.509-specific \texttt{expired\_certificate} and \texttt{untrusted\_issuer}. The X.509 baseline met expectations in all cases (100\%). The blockchain mechanism correctly rejected revoked identities and expired challenges (100\% expectation met) with zero false acceptances.
+
+\textbf{RQ1 synthesis (partial).} Under the security battery, both mechanisms prevented false acceptances across spoofing, replay, tampering, and revocation scenarios. The X.509 path additionally satisfied all expected reason codes, including legitimate \texttt{valid\_active} acceptance. The blockchain path exhibited two qualification areas within this battery: (i)~all 30 legitimate \texttt{valid\_active} attempts were rejected (false rejections = 30); and (ii)~unauthorised-operation tests were rejected but often with an incorrect reason code. These outcomes limit unconditional claims about blockchain normal-operation reliability even where malicious traffic was blocked.

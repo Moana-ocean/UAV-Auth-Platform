@@ -1,0 +1,34 @@
+% Batch 2a: Section 5.4 only
+% Data source: results/chapter5_export/02_all_summaries_enriched.csv
+
+\section{Normal Authentication Results}
+\label{sec:ch5-normal-auth}
+
+Normal authentication was evaluated with the \texttt{valid\_active} scenario across identity counts $n \in \{10,50,100,250,500\}$ and concurrency levels $c \in \{1,5,10,25,50\}$ for each mechanism (50 runs; steps 3--52 of the matrix). Table~\ref{tab:ch5-acceptance} reports acceptance outcomes after excluding warm-up attempts.
+
+For the X.509 baseline, every scalability run achieved full acceptance: $n_{\mathrm{accepted}} = 30$ of $n_{\mathrm{measured}} = 30$ with zero false rejections and zero timeouts across all 25 configurations (e.g.\ run \texttt{n500-identities\_c50-conc\_mech-x509-1backend\_valid-active\_r30\_audit-off\_20260820T022732Z}).
+
+For the blockchain mechanism, the same 25 scalability runs recorded \textbf{zero acceptances}: $n_{\mathrm{accepted}} = 0$, $n_{\mathrm{false\_rejections}} = 30$ per run, with observed reason codes inconsistent with the expected \texttt{ACCEPTED} outcome (see \texttt{07\_data\_quality\_report.md}). This systematic anomaly affects interpretation of blockchain normal-authentication performance in Sections~\ref{sec:ch5-latency} and~\ref{sec:ch5-comparison} and is treated as an implementation defect in the evaluated matrix rather than as evidence that legitimate blockchain authentication is inherently impossible.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Normal authentication acceptance ($n_{\mathrm{accepted}}$ / 30 measured repetitions) at representative workload points}
+    \label{tab:ch5-acceptance}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        \textbf{Identities} & \textbf{Concurrency} & \textbf{X.509 PKI} & \textbf{Blockchain} \\
+        \hline
+        10  & 1  & 30/30 & 0/30 \\
+        10  & 25 & 30/30 & 0/30 \\
+        10  & 50 & 30/30 & 0/30 \\
+        100 & 1  & 30/30 & 0/30 \\
+        100 & 25 & 30/30 & 0/30 \\
+        100 & 50 & 30/30 & 0/30 \\
+        500 & 1  & 30/30 & 0/30 \\
+        500 & 25 & 30/30 & 0/30 \\
+        500 & 50 & 30/30 & 0/30 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+Failure rates (\texttt{failure\_rate\_pct}) were 0.0 for all X.509 scalability runs (no authentication timeouts or internal errors). Blockchain runs likewise reported 0.0 failure rates in the summary schema because unexpected rejections are classified separately from timeout/internal failures.

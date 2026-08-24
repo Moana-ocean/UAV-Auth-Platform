@@ -1,0 +1,86 @@
+% Batch 1: Sections 5.1--5.3 (environment and methodology)
+% Generated from chapter3.tex, 01_environment.json, 00_run_order.md, LIMITATIONS.md
+
+\section{Introduction}
+\label{sec:ch5-intro}
+
+This chapter reports the objective experimental evaluation of the permissioned-blockchain authentication mechanism and the functionally comparable X.509 PKI baseline defined in Chapters~\ref{chap:research-design-methodology} and~\ref{chap:proposed-scheme}. The evaluation addresses RQ1--RQ4 through repeated controlled workloads: a security battery (adversarial scenarios), scalability runs over registered identity counts and concurrency levels, and an optional blockchain audit-transaction run. All measurements were collected on a single local host using instrumented software clients and server-side timers; no results in this chapter are inferred from architectural properties alone.
+
+The chapter is organised as follows. Section~\ref{sec:ch5-environment} documents the hardware, software, blockchain and PKI configurations. Section~\ref{sec:ch5-workloads} describes the workload matrix and measurement boundaries. Subsequent sections report normal authentication outcomes, adversarial test results, latency, throughput, resource consumption, communication overhead, gas usage, scalability trends, comparison with the PKI baseline, statistical reliability, and a conditional synthesis against the research questions.
+
+\section{Experimental Environment}
+\label{sec:ch5-environment}
+
+Both mechanisms were evaluated on the same physical host under a shared challenge--response protocol, ECDSA P-256 / SHA-256 application signatures, and an identical logical UAV population. The environment snapshot was captured at the start of the matrix runs (see \texttt{environment.json} in the experiment archive).
+
+\subsection{Hardware Configuration}
+\label{sec:ch5-hardware}
+
+The test host was a Windows~11 workstation (build~10.0.26200) with an Intel Core processor (Family~6 Model~140), eight logical CPUs, and approximately 16.8~GiB of installed memory. All four Hyperledger Besu validator containers and the Python evaluation client ran on this host via Docker Desktop with the WSL2 backend. Resource samples therefore include Docker Desktop and host operating-system overhead; they support comparative analysis under a shared workload rather than isolated hardware benchmarking.
+
+\subsection{Software Configuration}
+\label{sec:ch5-software}
+
+The evaluation platform was implemented in Python~3.13.5 (documented deviation from the originally planned Python~3.11/3.12 environment; see \texttt{LIMITATIONS.md}). Key package versions recorded at capture time were: \texttt{uav-auth-eval}~0.1.0, \texttt{cryptography}~44.0.2, \texttt{web3}~7.12.0, \texttt{pandas}~2.2.3, and \texttt{psutil}~7.0.0. Authentication-decision latency was measured with \texttt{time.perf\_counter\_ns()} on the GCS service path; user-interface rendering time was excluded.
+
+\subsection{Blockchain Network Configuration}
+\label{sec:ch5-blockchain-config}
+
+The permissioned ledger used Hyperledger Besu~26.7.1 in a four-validator QBFT network deployed locally in Docker. The JSON-RPC endpoint was \texttt{http://127.0.0.1:8545} with chain identifier~20245 (hex \texttt{0x4f15}). At environment capture, three peers were connected and the client version string was \texttt{besu/v26.7.1}. The identity registry smart contract was compiled with Solidity~0.8.24 and deployed at address \texttt{0x25629De856e42E1D2d52C8916622938C20A37Cc8} (deployment transaction gas recorded separately in Section~\ref{sec:ch5-gas}). During authentication, identity status was retrieved with read-only \texttt{eth\_call} operations; state-changing registration and revocation were performed in setup phases and are not included in default per-request decision latency unless explicitly stated.
+
+This deployment is a \emph{local} permissioned network on one machine. It does not demonstrate geographic decentralisation, Byzantine fault tolerance under malicious validators, or public-Ethereum performance (see \texttt{LIMITATIONS.md}).
+
+\subsection{PKI Baseline Configuration}
+\label{sec:ch5-pki-config}
+
+The X.509 baseline used a project-local root certification authority and issuing CA. Revocation was enforced through a locally available certificate revocation list (\texttt{local\_crl}). At the initial environment capture, 20 certificates had been issued with five revoked serials recorded on the CRL. Test identities included valid, revoked, expired-certificate, untrusted-issuer, and role-limited profiles to support adversarial scenarios. Certificate chain validation, expiry, key usage, identifier binding, and CRL checking were performed on the GCS path during authentication.
+
+\section{Experimental Workloads and Procedures}
+\label{sec:ch5-workloads}
+
+Workloads followed the matrix in Chapter~\ref{chap:research-design-methodology} (Table~\ref{tab:workload-matrix}) and were executed as 53 ordered steps (two security-battery runs, 50 scalability \texttt{valid\_active} runs, and one audit-enabled blockchain run). Table~\ref{tab:ch5-factor-levels} summarises the factor levels used in this chapter.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Experimental factor levels executed in the Chapter~5 matrix}
+    \label{tab:ch5-factor-levels}
+    \begin{tabular}{|p{0.32\textwidth}|p{0.55\textwidth}|}
+        \hline
+        \textbf{Factor} & \textbf{Levels} \\
+        \hline
+        Authentication mechanism & X.509 PKI; permissioned blockchain (Besu registry) \\
+        \hline
+        Registered UAV identities & 10, 50, 100, 250, 500 \\
+        \hline
+        Concurrent authentication workers & 1, 5, 10, 25, 50 \\
+        \hline
+        Measured repetitions per scenario & 30 (plus 2 warm-up attempts stored but excluded from default summaries) \\
+        \hline
+        Security battery (RQ1) & 13 scenarios (X.509) / 12 scenarios (blockchain); $n=10$, concurrency~1 \\
+        \hline
+        Normal authentication (RQ2--RQ3) & \texttt{valid\_active} only; audit transactions disabled except final audit run \\
+        \hline
+        Audit logging run & Blockchain; \texttt{valid\_active}; audit transaction enabled; $n=10$, concurrency~1 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Number of Registered UAV Identities}
+\label{sec:ch5-identities}
+
+Identity populations were grown monotonically across the matrix: when a run required $n$ registered identities, the platform ensured at least $n$ logical UAV records and, for the blockchain path, on-chain registration where applicable. Population expansion transactions were treated as setup and were not included in steady-state authentication-decision latency for scalability runs.
+
+\subsection{Concurrent Authentication Requests}
+\label{sec:ch5-concurrency}
+
+Each scalability run used a fixed concurrency level (1, 5, 10, 25, or 50 worker threads) submitting authentication attempts for the \texttt{valid\_active} scenario. Offered load and completed throughput were both recorded; completed throughput includes expected rejections in security runs but, for normal authentication, reflects successful completion of the authentication exchange from the client's perspective.
+
+\subsection{Experimental Repetitions and Warm-Up}
+\label{sec:ch5-repetitions}
+
+Each scenario was executed for 30 measured repetitions after 2 warm-up attempts. Warm-up rows are retained in the raw observation logs but excluded from default summary statistics (\texttt{warmup==false}). Where $n \geq 2$, 95\% confidence intervals for decision latency were computed with a percentile bootstrap (\texttt{scipy.stats.bootstrap}, 10\,000 resamples, method \texttt{percentile}, random seed tied to the run seed).
+
+\subsection{Network Conditions}
+\label{sec:ch5-network}
+
+All authentication traffic was exchanged on local loopback between software processes on the same host. No artificial delay, bandwidth limit, or packet-loss injection was applied. Measured latency therefore reflects cryptographic verification, certificate/CRL or registry access, and local RPC cost, but not cellular, satellite, or aerial radio propagation delay. This boundary is stated explicitly because it limits direct extrapolation to wide-area UAV deployments.

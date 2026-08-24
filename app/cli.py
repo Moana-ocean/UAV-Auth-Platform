@@ -242,20 +242,36 @@ def list_scenarios() -> None:
 @main.command("run-chapter5")
 @click.option("--dry-run", is_flag=True)
 @click.option("--start-step", default=1, type=int)
-def run_chapter5(dry_run: bool, start_step: int) -> None:
+@click.option(
+    "--output-root",
+    default=None,
+    help="Root for progress + runs/ (default: results/). Use a new path for corrective re-runs.",
+)
+def run_chapter5(dry_run: bool, start_step: int, output_root: str | None) -> None:
     """Run the Chapter 3 workload matrix with descriptive result folder names."""
     from scripts.run_chapter5_matrix import run_matrix
 
-    summary = run_matrix(start_step=start_step, dry_run=dry_run)
-    click.echo(json.dumps({"n_jobs": summary["n_jobs"], "dry_run": summary["dry_run"]}, indent=2))
+    summary = run_matrix(start_step=start_step, dry_run=dry_run, output_root=output_root)
+    click.echo(
+        json.dumps(
+            {
+                "n_jobs": summary["n_jobs"],
+                "dry_run": summary["dry_run"],
+                "output_root": summary.get("output_root"),
+            },
+            indent=2,
+        )
+    )
 
 
 @main.command("export-chapter5")
-def export_chapter5() -> None:
-    """Export CSV/JSON bundle for Chapter 5 dissertation writing (results/chapter5_export/)."""
+@click.option("--runs-root", default=None, help="Directory containing n*-identities_* run folders")
+@click.option("--export-dir", default=None, help="Destination export directory")
+def export_chapter5(runs_root: str | None, export_dir: str | None) -> None:
+    """Export CSV/JSON bundle for Chapter 5 dissertation writing."""
     from scripts.export_chapter5_bundle import export_bundle
 
-    out = export_bundle()
+    out = export_bundle(runs_root=runs_root, export_dir=export_dir)
     click.echo(f"Exported Chapter 5 bundle to {out}")
 
 

@@ -24,13 +24,22 @@ class BlockchainIdentityBackend(IdentityBackend):
     def lookup(
         self, uav_id: str, certificate_der: bytes | None = None
     ) -> tuple[IdentityRecord | None, str]:
-        try:
-            rec = self.adapter.get_record(uav_id)
-        except Exception as exc:  # noqa: BLE001
-            name = type(exc).__name__
+        import time
+
+        last_exc: Exception | None = None
+        for attempt in range(8):
+            try:
+                rec = self.adapter.get_record(uav_id)
+                last_exc = None
+                break
+            except Exception as exc:  # noqa: BLE001
+                last_exc = exc
+                time.sleep(0.25 * (2**attempt) if attempt < 5 else 2.0)
+        if last_exc is not None:
+            name = type(last_exc).__name__
             if "timeout" in name.lower() or "Time" in name:
                 return None, "IDENTITY_SERVICE_UNAVAILABLE"
-            if "Connection" in name or "timeout" in str(exc).lower():
+            if "Connection" in name or "timeout" in str(last_exc).lower():
                 return None, "IDENTITY_SERVICE_UNAVAILABLE"
             return None, "IDENTITY_SERVICE_UNAVAILABLE"
         if rec["status"] == STATUS_NONE or not rec["public_key"]:

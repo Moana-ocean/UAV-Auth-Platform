@@ -33,11 +33,7 @@ def _parse_run_id(run_id: str) -> dict[str, str | int]:
 
 
 def _matrix_run_dirs(runs_root: Path) -> list[Path]:
-    return sorted(
-        p.parent
-        for p in runs_root.glob("n*-*/summary.csv")
-        if p.parent.is_dir()
-    )
+    return sorted(p.parent for p in runs_root.glob("n*-*/summary.csv") if p.parent.is_dir())
 
 
 def _merge_csv(paths: list[Path], out: Path) -> int:
@@ -50,17 +46,48 @@ def _merge_csv(paths: list[Path], out: Path) -> int:
     return len(df)
 
 
-def _build_manifest(export: Path) -> None:
+def _factor_key(mechanism: str, n: int, concurrency: list[int] | int, scenarios: list[str], audit: bool) -> str:
+    c = concurrency[0] if isinstance(concurrency, list) else concurrency
+    if scenarios == ["valid_active"]:
+        scen = "valid_active"
+    else:
+        scen = "security_battery"
+    return f"{mechanism}|n={n}|c={c}|{scen}|audit={'on' if audit else 'off'}"
+
+
+def _build_manifest(export: Path, runs_root: Path) -> None:
+    """Match planned steps to real on-disk run directories by factors (not regenerated timestamps)."""
     jobs = planned_runs()
-    completed_dirs = {d.name: d for d in _matrix_run_dirs(project_root() / "results" / "runs")}
+    dirs = _matrix_run_dirs(runs_root)
+    by_factor: dict[str, list[Path]] = {}
+    for d in dirs:
+        meta = _parse_run_id(d.name)
+        if not meta:
+            continue
+        scen = "security_battery" if "security" in str(meta.get("scenario", "")) else "valid_active"
+        key = (
+            f"{meta['mechanism']}|n={meta['n_identities']}|c={meta['concurrency']}|"
+            f"{scen}|audit={'on' if meta['audit_tx'] else 'off'}"
+        )
+        by_factor.setdefault(key, []).append(d)
+
     steps: list[dict] = []
     for job in jobs:
-        folder = job.cfg.descriptive_run_id()
+        key = _factor_key(
+            job.cfg.mechanism,
+            job.cfg.n_identities,
+            job.cfg.concurrency_levels,
+            job.cfg.scenarios,
+            job.cfg.audit_tx_enabled,
+        )
+        matches = by_factor.get(key, [])
+        # Prefer the newest directory if multiple exist for the same cell.
+        chosen = sorted(matches, key=lambda p: p.name)[-1] if matches else None
         entry = {
             "step": job.step,
             "phase": job.phase,
             "notes": job.notes,
-            "run_id": folder,
+            "planned_factor_key": key,
             "mechanism": job.cfg.mechanism,
             "n_identities": job.cfg.n_identities,
             "concurrency": job.cfg.concurrency_levels,
@@ -68,19 +95,23 @@ def _build_manifest(export: Path) -> None:
             "repetitions": job.cfg.repetitions,
             "warmup": job.cfg.warmup_repetitions,
             "audit_tx": job.cfg.audit_tx_enabled,
-            "present_on_disk": folder in completed_dirs,
+            "present_on_disk": chosen is not None,
+            "run_id": chosen.name if chosen else None,
+            "path": str(chosen) if chosen else None,
         }
-        if folder in completed_dirs:
-            entry["path"] = str(completed_dirs[folder])
-            status_path = completed_dirs[folder] / "status.json"
-            if status_path.exists():
-                entry["status"] = json.loads(status_path.read_text(encoding="utf-8")).get(
-                    "status", "unknown"
-                )
+        if chosen and (chosen / "status.json").exists():
+            entry["status"] = json.loads((chosen / "status.json").read_text(encoding="utf-8")).get(
+                "status", "unknown"
+            )
         steps.append(entry)
+
+    n_present = sum(1 for s in steps if s["present_on_disk"])
     manifest = {
         "n_steps": len(steps),
-        "n_present": sum(1 for s in steps if s["present_on_disk"]),
+        "n_present": n_present,
+        "n_missing": len(steps) - n_present,
+        "runs_root": str(runs_root),
+        "match_method": "factor_key_latest_timestamp",
         "steps": steps,
     }
     (export / "00_manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -88,7 +119,7 @@ def _build_manifest(export: Path) -> None:
 
 def _enrich_summaries(export: Path) -> None:
     src = export / "02_all_summaries.csv"
-    if not src.exists():
+    if not src.exists() or src.stat().st_size == 0:
         return
     df = pd.read_csv(src)
     parsed = df["run_id"].map(_parse_run_id)
@@ -116,9 +147,7 @@ def _security_by_scenario(export: Path) -> None:
             ).sum()
         )
         met = int(grp["expectation_met"].astype(str).str.lower().eq("true").sum())
-        attack_rej = (
-            round(100.0 * (1 - false_acc / n_mal), 2) if n_mal else None
-        )
+        attack_rej = round(100.0 * (1 - false_acc / n_mal), 2) if n_mal else None
         lat = grp["decision_latency_ms"].astype(float)
         rows.append(
             {
@@ -172,14 +201,9 @@ def _comm_overhead_summary(export: Path) -> None:
     )
 
 
-def _system_metrics_summary(export: Path) -> None:
-    src = export / "05_system_metrics.csv"
-    if not src.exists() or src.stat().st_size == 0:
-        return
-    # system_metrics.csv lacks run_id; aggregate per run directory.
-    runs_root = project_root() / "results" / "runs"
+def _system_metrics_summary(export: Path, run_dirs: list[Path]) -> None:
     rows: list[dict] = []
-    for run_dir in _matrix_run_dirs(runs_root):
+    for run_dir in run_dirs:
         metrics_path = run_dir / "system_metrics.csv"
         if not metrics_path.exists():
             continue
@@ -197,13 +221,20 @@ def _system_metrics_summary(export: Path) -> None:
                 "max_rss_mb": round(m["rss_bytes"].astype(float).max() / 1_048_576, 2),
             }
         )
-    pd.DataFrame(rows).sort_values(["n_identities", "concurrency", "mechanism"]).to_csv(
-        export / "05_system_metrics_by_run.csv", index=False
-    )
+    if rows:
+        pd.DataFrame(rows).sort_values(["n_identities", "concurrency", "mechanism"]).to_csv(
+            export / "05_system_metrics_by_run.csv", index=False
+        )
 
 
 def _quality_report(export: Path) -> None:
-    df = pd.read_csv(export / "02_all_summaries.csv")
+    src = export / "02_all_summaries.csv"
+    if not src.exists() or src.stat().st_size == 0:
+        (export / "07_data_quality_report.md").write_text(
+            "# Chapter 5 data quality report\n\nNo summaries found.\n", encoding="utf-8"
+        )
+        return
+    df = pd.read_csv(src)
     df = df[df["latency_set"] == "all_finished"]
     issues: list[str] = []
     for _, row in df.iterrows():
@@ -220,17 +251,25 @@ def _quality_report(export: Path) -> None:
         & df["run_id"].str.contains("valid-active")
         & ~df["run_id"].str.contains("security-battery")
     ]
-    bc_fr = int(blockchain_valid["false_rejections"].sum())
-    decision = (
-        "**Decision: report honestly in Chapter 5** — blockchain valid_active runs show "
-        "systematic false rejections (likely implementation defect during scale matrix). "
-        "Do not use blockchain accepted_only latency for comparative performance claims "
-        "until re-run after fix. X.509 and adversarial (non-valid) scenarios remain usable."
-    )
+    bc_fr = int(blockchain_valid["false_rejections"].sum()) if len(blockchain_valid) else 0
+    if issues:
+        decision = (
+            "**NOT clean for unrestricted Chapter 5 comparison** — resolve anomalies "
+            "listed below before treating blockchain accepted_only latency as comparable."
+        )
+    else:
+        decision = (
+            "**Clean for Chapter 5 analysis** — no false acceptances/rejections or unexpected "
+            "outcomes in all_finished summaries for this export package."
+        )
+    try:
+        rel = str(export.relative_to(project_root()))
+    except ValueError:
+        rel = str(export)
     lines = [
         "# Chapter 5 data quality report",
         "",
-        f"Generated from `{export.relative_to(project_root())}`",
+        f"Generated from `{rel}`",
         "",
         "## Summary",
         "",
@@ -246,77 +285,106 @@ def _quality_report(export: Path) -> None:
     (export / "07_data_quality_report.md").write_text("\n".join(lines), encoding="utf-8")
 
 
-def export_bundle() -> Path:
+def export_bundle(
+    *,
+    runs_root: str | Path | None = None,
+    export_dir: str | Path | None = None,
+) -> Path:
     root = project_root()
-    export = root / "results" / "chapter5_export"
+    runs = Path(runs_root) if runs_root else (root / "results" / "runs")
+    if not runs.is_absolute():
+        runs = root / runs
+    export = Path(export_dir) if export_dir else (root / "results" / "chapter5_export")
+    if not export.is_absolute():
+        export = root / export
     export.mkdir(parents=True, exist_ok=True)
-    runs_root = root / "results" / "runs"
 
-    for name in ("CHAPTER5_RUN_ORDER.md",):
-        shutil.copy2(root / "docs" / name, export / "00_run_order.md")
+    shutil.copy2(root / "docs" / "CHAPTER5_RUN_ORDER.md", export / "00_run_order.md")
     shutil.copy2(root / "docs" / "METRICS.md", export / "00_METRICS.md")
     shutil.copy2(root / "LIMITATIONS.md", export / "00_LIMITATIONS.md")
 
-    env_src = runs_root / (
-        "n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_"
-        "20260820T020457Z/environment.json"
+    _build_manifest(export, runs)
+    manifest = json.loads((export / "00_manifest.json").read_text(encoding="utf-8"))
+    # Only use the factor-matched latest run per planned step — ignore superseded retries.
+    matrix_dirs = [
+        Path(s["path"])
+        for s in manifest["steps"]
+        if s.get("present_on_disk") and s.get("path")
+    ]
+    (export / "00_selected_run_ids.txt").write_text(
+        "\n".join(d.name for d in matrix_dirs) + "\n", encoding="utf-8"
     )
-    shutil.copy2(env_src, export / "01_environment.json")
 
-    matrix_dirs = _matrix_run_dirs(runs_root)
+    env_candidates = [d / "environment.json" for d in matrix_dirs if (d / "environment.json").exists()]
+    if env_candidates:
+        shutil.copy2(env_candidates[0], export / "01_environment.json")
+
     _merge_csv([d / "summary.csv" for d in matrix_dirs], export / "02_all_summaries.csv")
     _merge_csv(
         [d / "observations.csv" for d in matrix_dirs if "security-battery" in d.name],
         export / "03_security_observations.csv",
     )
     _merge_csv(
-        [
-            d / "observations.csv"
-            for d in matrix_dirs
-            if "security-battery" not in d.name
-        ],
+        [d / "observations.csv" for d in matrix_dirs if "security-battery" not in d.name],
         export / "04_scale_observations.csv",
     )
     _merge_csv([d / "system_metrics.csv" for d in matrix_dirs], export / "05_system_metrics.csv")
 
-    audit_dir = runs_root / (
-        "n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-on_"
-        "20260820T022802Z"
-    )
-    shutil.copy2(audit_dir / "observations.csv", export / "06_audit_observations.csv")
-    shutil.copy2(audit_dir / "config.json", export / "06_audit_config.json")
+    audit_dirs = [
+        d
+        for d in matrix_dirs
+        if "blockchain" in d.name and "audit-on" in d.name and "valid-active" in d.name
+    ]
+    if audit_dirs:
+        audit_dir = sorted(audit_dirs, key=lambda p: p.name)[-1]
+        shutil.copy2(audit_dir / "observations.csv", export / "06_audit_observations.csv")
+        shutil.copy2(audit_dir / "config.json", export / "06_audit_config.json")
 
-    _build_manifest(export)
     _enrich_summaries(export)
     _security_by_scenario(export)
     _comm_overhead_summary(export)
-    _system_metrics_summary(export)
+    _system_metrics_summary(export, matrix_dirs)
     _quality_report(export)
 
-    readme = export / "README.md"
-    readme.write_text(
+    for name in (
+        "BASELINE_INVENTORY.md",
+        "ROOT_CAUSE_AND_FIX_REPORT.md",
+        "RERUN_PLAN.md",
+        "CHANGE_IMPACT_ASSESSMENT.md",
+        "BEFORE_AFTER_VALIDATION.md",
+        "REGRESSION_TEST_REPORT.md",
+    ):
+        src = root / name
+        if src.exists():
+            shutil.copy2(src, export / name)
+
+    (export / "README.md").write_text(
         "# Chapter 5 export bundle\n\n"
-        "Upload files per batch as described in `docs/CHAPTER5_GPT_BATCHES.md`.\n\n"
-        "| File | Description |\n"
-        "|------|-------------|\n"
-        "| 00_manifest.json | Full 53-step matrix with on-disk status |\n"
-        "| 02_all_summaries_enriched.csv | Run aggregates with parsed factors |\n"
-        "| 03_security_by_scenario.csv | Adversarial scenario aggregates |\n"
-        "| 04_comm_overhead_summary.csv | Request/response size by run |\n"
-        "| 05_system_metrics_by_run.csv | CPU/RSS per run |\n"
-        "| 07_data_quality_report.md | Anomaly list and writing guidance |\n",
+        f"runs_root: `{runs}`\n\n"
+        "Manifest matches planned steps to real directories by factor key "
+        "(mechanism, n, concurrency, scenario group, audit), using the latest timestamp "
+        "when duplicates exist. Summaries include only those selected run IDs.\n",
         encoding="utf-8",
     )
     return export
 
 
 def main() -> None:
-    out = export_bundle()
-    n_summaries = len(pd.read_csv(out / "02_all_summaries.csv"))
-    n_sec = len(pd.read_csv(out / "03_security_observations.csv"))
+    import sys
+
+    runs_root = None
+    export_dir = None
+    argv = sys.argv[1:]
+    if "--runs-root" in argv:
+        runs_root = argv[argv.index("--runs-root") + 1]
+    if "--export-dir" in argv:
+        export_dir = argv[argv.index("--export-dir") + 1]
+    out = export_bundle(runs_root=runs_root, export_dir=export_dir)
+    n_summaries = len(pd.read_csv(out / "02_all_summaries.csv")) if (out / "02_all_summaries.csv").stat().st_size else 0
     print(f"Exported to {out}")
     print(f"  summaries: {n_summaries} rows")
-    print(f"  security observations: {n_sec} rows")
+    man = json.loads((out / "00_manifest.json").read_text(encoding="utf-8"))
+    print(f"  manifest present={man['n_present']}/{man['n_steps']} missing={man['n_missing']}")
 
 
 if __name__ == "__main__":

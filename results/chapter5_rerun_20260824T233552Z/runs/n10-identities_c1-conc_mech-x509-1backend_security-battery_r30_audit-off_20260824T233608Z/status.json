@@ -1,0 +1,15 @@
+{
+  "run_id": "n10-identities_c1-conc_mech-x509-1backend_security-battery_r30_audit-off_20260824T233608Z",
+  "status": "completed",
+  "completed": 416,
+  "total": 416,
+  "counts": {
+    "completed": 416,
+    "accepted": 32,
+    "expected_rejection": 384,
+    "unexpected": 0,
+    "timeout": 0,
+    "internal": 0
+  },
+  "elapsed_s": 8.429781500002719
+}

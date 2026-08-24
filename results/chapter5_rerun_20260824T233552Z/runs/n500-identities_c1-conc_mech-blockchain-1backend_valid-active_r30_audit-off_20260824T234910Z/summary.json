@@ -1,0 +1,52 @@
+{
+  "n_submitted": 32,
+  "n_warmup_excluded": 2,
+  "n_measured": 30,
+  "n_accepted": 0,
+  "n_expected_rejection": 0,
+  "n_unexpected": 30,
+  "n_timeout": 0,
+  "n_internal_error": 0,
+  "failure_rate_pct": 0.0,
+  "attack_rejection_rate_pct": null,
+  "false_acceptances": 0,
+  "false_rejections": 30,
+  "completed_throughput_rps": 0.594352909176528,
+  "offered_load_rps": 0.6339764364549632,
+  "counts_by_mechanism_scenario_outcome": {
+    "blockchain|valid_active|IDENTITY_SERVICE_UNAVAILABLE": 30
+  },
+  "latency_all_finished": {
+    "n": 30,
+    "filter_rule": "warmup==false; include all finished decisions",
+    "mean_ms": 1563.4331933333335,
+    "median_ms": 1556.1349,
+    "std_ms": 42.768666709676616,
+    "min_ms": 1530.8288,
+    "max_ms": 1767.6395,
+    "p95_ms": 1596.919095,
+    "p99_ms": 1718.9398,
+    "ci95_low_ms": 1551.4111304166665,
+    "ci95_high_ms": 1581.1441436666667,
+    "ci_method": "scipy.stats.bootstrap percentile 10000 resamples 95%"
+  },
+  "latency_accepted_only": {
+    "n": 0,
+    "filter_rule": "warmup==false AND observed_outcome==ACCEPTED",
+    "mean_ms": null,
+    "median_ms": null,
+    "std_ms": null,
+    "min_ms": null,
+    "max_ms": null,
+    "p95_ms": null,
+    "p99_ms": null,
+    "ci95_low_ms": null,
+    "ci95_high_ms": null,
+    "ci_method": "n<2; CI omitted"
+  },
+  "gas_used": {
+    "n": 0,
+    "mean": null,
+    "note": "EVM gas units; not a monetary cost"
+  }
+}

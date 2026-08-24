@@ -119,11 +119,14 @@ class IdentityPopulation:
         if rec is None:
             raise KeyError(uav_id)
         key = private_key_from_pem(Path(rec["key_pem"]).read_bytes())
+        # Always derive the public key from the PEM private key so signing and
+        # local verification cannot drift from a stale public_key_hex field.
+        derived = public_bytes_uncompressed(key.public_key())
         return UAVKeyMaterial(
             uav_id=uav_id,
             private_key=key,
             public_key=key.public_key(),
-            public_key_bytes=bytes.fromhex(rec["public_key_hex"]),
+            public_key_bytes=derived,
             role=int(rec["role"]),
             tags=list(rec.get("tags", [])),
         )

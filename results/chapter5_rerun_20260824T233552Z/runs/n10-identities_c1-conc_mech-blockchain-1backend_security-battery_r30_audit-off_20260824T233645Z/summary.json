@@ -1,0 +1,63 @@
+{
+  "n_submitted": 384,
+  "n_warmup_excluded": 24,
+  "n_measured": 360,
+  "n_accepted": 30,
+  "n_expected_rejection": 330,
+  "n_unexpected": 0,
+  "n_timeout": 0,
+  "n_internal_error": 0,
+  "failure_rate_pct": 0.0,
+  "attack_rejection_rate_pct": 100.0,
+  "false_acceptances": 0,
+  "false_rejections": 0,
+  "completed_throughput_rps": 1.518874494524231,
+  "offered_load_rps": 1.6201327941591797,
+  "counts_by_mechanism_scenario_outcome": {
+    "blockchain|valid_active|ACCEPTED": 30,
+    "blockchain|unknown_uav|UNKNOWN_IDENTITY": 30,
+    "blockchain|impersonation_wrong_key|INVALID_SIGNATURE": 30,
+    "blockchain|replay|REPLAY_DETECTED": 30,
+    "blockchain|modified_nonce|INVALID_SIGNATURE": 30,
+    "blockchain|modified_uav_id|INVALID_SIGNATURE": 30,
+    "blockchain|modified_operation|INVALID_SIGNATURE": 30,
+    "blockchain|expired_challenge|EXPIRED_CHALLENGE": 30,
+    "blockchain|revoked_uav|REVOKED_IDENTITY": 30,
+    "blockchain|unauthorised_operation|UNAUTHORISED_OPERATION": 30,
+    "blockchain|malformed|MALFORMED_REQUEST": 30,
+    "blockchain|rpc_unavailable|IDENTITY_SERVICE_UNAVAILABLE": 30
+  },
+  "latency_all_finished": {
+    "n": 360,
+    "filter_rule": "warmup==false; include all finished decisions",
+    "mean_ms": 593.8264525000001,
+    "median_ms": 19.27475,
+    "std_ms": 1917.7646036782614,
+    "min_ms": 0.0087,
+    "max_ms": 7048.1319,
+    "p95_ms": 6929.999075,
+    "p99_ms": 6976.8335720000005,
+    "ci95_low_ms": 401.7517289652777,
+    "ci95_high_ms": 804.5704404097222,
+    "ci_method": "scipy.stats.bootstrap percentile 10000 resamples 95%"
+  },
+  "latency_accepted_only": {
+    "n": 30,
+    "filter_rule": "warmup==false AND observed_outcome==ACCEPTED",
+    "mean_ms": 27.66623,
+    "median_ms": 22.708550000000002,
+    "std_ms": 15.187273228121652,
+    "min_ms": 15.1653,
+    "max_ms": 94.0441,
+    "p95_ms": 46.91642499999999,
+    "p99_ms": 80.86716700000004,
+    "ci95_low_ms": 23.10663116666667,
+    "ci95_high_ms": 33.63569283333333,
+    "ci_method": "scipy.stats.bootstrap percentile 10000 resamples 95%"
+  },
+  "gas_used": {
+    "n": 0,
+    "mean": null,
+    "note": "EVM gas units; not a monetary cost"
+  }
+}

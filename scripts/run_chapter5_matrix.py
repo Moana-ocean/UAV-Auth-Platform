@@ -13,6 +13,7 @@ import json
 import sys
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any
 
 from app.auth.blockchain.client import is_reachable
@@ -148,52 +149,88 @@ def planned_runs() -> list[PlannedRun]:
     return jobs
 
 
-def _ensure_population(n: int) -> dict[str, Any]:
+_CHAIN_SYNCED = False
+
+
+def _ensure_population(n: int, *, sync_chain: bool) -> dict[str, Any]:
+    """Grow local identities; sync the chain only when needed.
+
+    Full-population getRecord/updateKey on every matrix step overwhelms local
+    Besu. Sync when new identities were added, or once per process when a
+    blockchain job requests chain consistency.
+    """
     pop = IdentityPopulation(data_dir())
     payload = pop.generate(n)
-    chain_ops = []
-    if is_reachable() and deployment_path().exists():
-        chain_ops = register_population_on_chain(pop)
-    return {"identities": payload["count"], "added": payload.get("added", 0), "chain_ops": len(chain_ops)}
+    chain_ops: list[Any] = []
+    added = int(payload.get("added", 0))
+    global _CHAIN_SYNCED  # noqa: PLW0603 — process-local matrix guard
+    if sync_chain and is_reachable() and deployment_path().exists():
+        if added > 0 or not _CHAIN_SYNCED:
+            chain_ops = register_population_on_chain(pop)
+            _CHAIN_SYNCED = True
+    return {
+        "identities": payload["count"],
+        "added": added,
+        "chain_ops": len(chain_ops),
+        "chain_synced": _CHAIN_SYNCED,
+    }
 
 
-def run_matrix(*, start_step: int = 1, dry_run: bool = False) -> dict[str, Any]:
+def run_matrix(
+    *,
+    start_step: int = 1,
+    dry_run: bool = False,
+    output_root: str | None = None,
+) -> dict[str, Any]:
+    from dataclasses import replace
+
+    global _CHAIN_SYNCED  # noqa: PLW0603
+    _CHAIN_SYNCED = False
     jobs = planned_runs()
-    root = project_root() / "results"
+    root = Path(output_root) if output_root else (project_root() / "results")
+    if not root.is_absolute():
+        root = project_root() / root
+    runs_dir = root / "runs"
     root.mkdir(parents=True, exist_ok=True)
+    runs_dir.mkdir(parents=True, exist_ok=True)
     started = datetime.now(UTC).isoformat()
     completed: list[dict[str, Any]] = []
     for job in jobs:
         if job.step < start_step:
             continue
-        folder = job.cfg.descriptive_run_id()
+        cfg = replace(job.cfg, output_dir=str(runs_dir))
+        folder = cfg.descriptive_run_id()
         record = {
             "step": job.step,
             "phase": job.phase,
             "notes": job.notes,
             "run_id": folder,
-            "mechanism": job.cfg.mechanism,
-            "n_identities": job.cfg.n_identities,
-            "concurrency": job.cfg.concurrency_levels,
-            "scenarios": job.cfg.scenarios,
-            "repetitions": job.cfg.repetitions,
-            "warmup": job.cfg.warmup_repetitions,
-            "audit_tx": job.cfg.audit_tx_enabled,
-            "estimated_requests": job.cfg.estimate_total_requests(),
+            "mechanism": cfg.mechanism,
+            "n_identities": cfg.n_identities,
+            "concurrency": cfg.concurrency_levels,
+            "scenarios": cfg.scenarios,
+            "repetitions": cfg.repetitions,
+            "warmup": cfg.warmup_repetitions,
+            "audit_tx": cfg.audit_tx_enabled,
+            "estimated_requests": cfg.estimate_total_requests(),
+            "output_root": str(root),
         }
         print(
             f"[{job.step}/{jobs[-1].step}] {job.phase} "
-            f"n={job.cfg.n_identities} c={job.cfg.concurrency_levels} "
-            f"mech={job.cfg.mechanism} -> {folder}",
+            f"n={cfg.n_identities} c={cfg.concurrency_levels} "
+            f"mech={cfg.mechanism} -> {folder}",
             flush=True,
         )
         if dry_run:
             completed.append({**record, "status": "planned"})
             continue
         if job.ensure_identities:
-            pop_info = _ensure_population(job.ensure_identities)
+            pop_info = _ensure_population(
+                job.ensure_identities,
+                sync_chain=(cfg.mechanism == "blockchain"),
+            )
             record["population"] = pop_info
-        runner = ExperimentRunner(job.cfg, run_id=folder)
+        runner = ExperimentRunner(cfg, run_id=folder)
         path = runner.run()
         record["path"] = str(path)
         record["status"] = json.loads((path / "status.json").read_text(encoding="utf-8")).get(
@@ -204,6 +241,7 @@ def run_matrix(*, start_step: int = 1, dry_run: bool = False) -> dict[str, Any]:
             "started_at": started,
             "updated_at": datetime.now(UTC).isoformat(),
             "dry_run": dry_run,
+            "output_root": str(root),
             "completed": completed,
         }
         (root / "chapter5_matrix_progress.json").write_text(
@@ -213,6 +251,7 @@ def run_matrix(*, start_step: int = 1, dry_run: bool = False) -> dict[str, Any]:
         "started_at": started,
         "finished_at": datetime.now(UTC).isoformat(),
         "dry_run": dry_run,
+        "output_root": str(root),
         "n_jobs": len(jobs),
         "completed": completed,
     }
@@ -224,9 +263,12 @@ def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     dry = "--dry-run" in argv
     start = 1
+    output_root = None
     if "--start-step" in argv:
         start = int(argv[argv.index("--start-step") + 1])
-    run_matrix(start_step=start, dry_run=dry)
+    if "--output-root" in argv:
+        output_root = argv[argv.index("--output-root") + 1]
+    run_matrix(start_step=start, dry_run=dry, output_root=output_root)
     return 0
 
 

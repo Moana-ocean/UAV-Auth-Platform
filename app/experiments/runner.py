@@ -23,7 +23,7 @@ from app.core.canonical import payload_digest_hex
 from app.core.config import ExperimentConfig
 from app.core.constants import DEFAULT_RPC_URL
 from app.core.schemas import Observation
-from app.experiments.identities import IdentityPopulation
+from app.experiments.identities import SPECIAL_IDS, IdentityPopulation
 from app.experiments.sampler import ResourceSampler
 from app.experiments.scenarios import mixed_kind, prepare_attempt
 from app.metrics.charts import write_charts
@@ -385,6 +385,16 @@ class ExperimentRunner:
 
 
 def register_population_on_chain(pop: IdentityPopulation) -> list[dict[str, Any]]:
+    """Register or synchronise local UAV public keys onto the registry.
+
+    If an identity is already Active/Suspended but the on-chain public key does
+    not match the local signing key, call ``updateKey`` (and ``updateRole`` when
+    needed) for identities used in authentication scenarios. Skipping this sync
+    leaves stale keys after local identity regeneration and causes systematic
+    ``INVALID_SIGNATURE`` false rejections. Bulk non-scenario identities are
+    registered when missing but not mass-updated, to avoid overwhelming local
+    Besu during the matrix.
+    """
     if not deployment_path().exists():
         raise RuntimeError("contract is not deployed; run deploy-contract first")
     dep = json.loads(deployment_path().read_text(encoding="utf-8"))
@@ -392,22 +402,49 @@ def register_population_on_chain(pop: IdentityPopulation) -> list[dict[str, Any]
         rpc_url=dep.get("rpc_url") or DEFAULT_RPC_URL,
         address=dep["address"],
         private_key=_load_ra_key(),
-        timeout_s=15,
+        timeout_s=30,
     )
     receipts = []
+    specials = set(SPECIAL_IDS)
     for rec in pop.load_meta().get("identities", []):
         uav_id = rec["uav_id"]
         pk = bytes.fromhex(rec["public_key_hex"])
         role = int(rec["role"])
-        existing = adapter.get_record(uav_id)
-        if existing["status"] == 0:
+        existing = _get_record_retry(adapter, uav_id)
+        status = int(existing["status"])
+        if status == 0:
             receipts.append(
                 {"uav_id": uav_id, "op": "register", **adapter.register(uav_id, pk, role)}
             )
-        if "revoked" in rec.get("tags", []) and existing["status"] != 3:
-            # register then revoke if just registered, or revoke current
-            if existing["status"] == 0:
-                existing = adapter.get_record(uav_id)
-            if existing["status"] in {1, 2}:
+            existing = _get_record_retry(adapter, uav_id)
+            status = int(existing["status"])
+        elif status in {1, 2} and uav_id in specials:
+            chain_pk = bytes(existing["public_key"] or b"")
+            if chain_pk != pk:
+                receipts.append(
+                    {"uav_id": uav_id, "op": "updateKey", **adapter.update_key(uav_id, pk)}
+                )
+            if int(existing["role"]) != role:
+                receipts.append(
+                    {"uav_id": uav_id, "op": "updateRole", **adapter.update_role(uav_id, role)}
+                )
+        if "revoked" in rec.get("tags", []) and status != 3:
+            existing = _get_record_retry(adapter, uav_id)
+            status = int(existing["status"])
+            if status in {1, 2}:
                 receipts.append({"uav_id": uav_id, "op": "revoke", **adapter.revoke(uav_id)})
     return receipts
+
+
+def _get_record_retry(adapter: RegistryAdapter, uav_id: str, attempts: int = 5) -> dict[str, Any]:
+    import time
+
+    last: Exception | None = None
+    for i in range(attempts):
+        try:
+            return adapter.get_record(uav_id)
+        except Exception as exc:  # noqa: BLE001 — Besu transient Internal error
+            last = exc
+            time.sleep(0.4 * (i + 1))
+    assert last is not None
+    raise last

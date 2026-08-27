@@ -1,0 +1,283 @@
+% Appendix C: Data dictionary, selected results and reproducibility evidence
+
+\chapter{Data Dictionary, Selected Results and Reproducibility Evidence}
+\label{app:experimental-data}
+
+This appendix supports Chapter~\ref{chap:evaluation} with field definitions, representative raw outputs from the corrected rerun export (\texttt{results/chapter5\_rerun\_20260824T233552Z/export/}), the data-quality report, archive layout and repository checksums.
+
+\section{Data Dictionary}
+\label{app:data-dictionary}
+
+Table~\ref{tab:app-obs-fields} defines the principal per-request fields in \texttt{observations.csv}. Full definitions, latency boundaries and summary-statistic methods are documented in \texttt{docs/METRICS.md} (copied to \texttt{export/00\_METRICS.md}).
+
+\begin{table}[htbp]
+    \centering
+    \caption{Selected per-request observation fields}
+    \label{tab:app-obs-fields}
+    \small
+    \begin{tabular}{|p{0.28\textwidth}|p{0.62\textwidth}|}
+        \hline
+        \textbf{Field} & \textbf{Meaning} \\
+        \hline
+        \texttt{run\_id} & Unique experimental run identifier \\
+        \hline
+        \texttt{mechanism} & \texttt{x509} or \texttt{blockchain} \\
+        \hline
+        \texttt{scenario} & Stable scenario id (e.g.\ \texttt{valid\_active}, \texttt{replay}) \\
+        \hline
+        \texttt{repetition} & 0-based measured repetition index \\
+        \hline
+        \texttt{expected\_outcome} / \texttt{observed\_outcome} & Reason codes; match required for correctness \\
+        \hline
+        \texttt{expectation\_met} & \texttt{true} iff expected and observed codes match \\
+        \hline
+        \texttt{decision\_latency\_ms} & GCS receipt of complete request $\rightarrow$ accept/reject decision \\
+        \hline
+        \texttt{identity\_lookup\_ns} & Certificate/CRL load or registry retrieval only \\
+        \hline
+        \texttt{contract\_call\_ns} & Read-only \texttt{eth\_call} duration (blockchain only) \\
+        \hline
+        \texttt{audit\_confirmation\_ns} & Audit tx submit $\rightarrow$ confirmation (blockchain, audit on) \\
+        \hline
+        \texttt{warmup} & \texttt{true} if excluded from default summaries \\
+        \hline
+        \texttt{tx\_hash}, \texttt{gas\_used} & Present for audit or setup transactions \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Selected run-level summary fields}
+    \label{tab:app-summary-fields}
+    \small
+    \begin{tabular}{|p{0.28\textwidth}|p{0.62\textwidth}|}
+        \hline
+        \textbf{Field} & \textbf{Meaning} \\
+        \hline
+        \texttt{n\_warmup\_excluded} & Warm-up rows omitted from default analysis \\
+        \hline
+        \texttt{false\_acceptances} & Adversarial request incorrectly accepted \\
+        \hline
+        \texttt{false\_rejections} & Valid scenario incorrectly rejected \\
+        \hline
+        \texttt{attack\_rejection\_rate\_pct} & Malicious requests rejected / malicious submitted $\times 100$ \\
+        \hline
+        \texttt{failure\_rate\_pct} & Timeouts and internal errors only; expected security rejections excluded \\
+        \hline
+        \texttt{mean\_ms}, \texttt{p95\_ms}, \texttt{ci95\_low\_ms} & Decision-latency statistics (warm-up excluded) \\
+        \hline
+        \texttt{latency\_set} & \texttt{all\_finished} or \texttt{accepted\_only} filter \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{Data Quality Report}
+\label{app:data-quality}
+
+The automated export quality check for the corrected rerun reported no admissibility anomalies:
+
+\begin{quote}
+\textbf{Chapter 5 data quality report} (generated from \texttt{chapter5\_rerun\_20260824T233552Z/export}).
+\begin{itemize}
+    \item Matrix summary rows analysed: 53
+    \item Runs with anomalies (false accept/reject or unexpected): 0
+    \item Total \texttt{false\_rejections} on blockchain \texttt{valid\_active} scale runs: 0
+    \item Anomalous runs: none
+    \item Status: \emph{clean for Chapter~5 analysis}
+\end{itemize}
+\end{quote}
+
+\section{Selected Raw Results}
+\label{app:selected-raw}
+
+\subsection{Security Battery Summaries (Steps 1--2)}
+\label{app:raw-security}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Security battery run summaries (\texttt{summary.csv}, \texttt{all\_finished} row)}
+    \label{tab:app-raw-security}
+    \small
+    \begin{tabular}{|l|r|r|r|r|r|}
+        \hline
+        \textbf{Mechanism} & \textbf{$n$} & \textbf{Accepted} & \textbf{Exp.\ rej.} & \textbf{FA} & \textbf{FR} \\
+        \hline
+        X.509 (step 1) & 390 & 30 & 360 & 0 & 0 \\
+        \hline
+        Blockchain (step 2) & 360 & 30 & 330 & 0 & 0 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\noindent
+Both runs recorded \texttt{attack\_rejection\_rate\_pct = 100.0} and \texttt{n\_unexpected = 0}.
+
+\subsection{Security Outcomes by Scenario}
+\label{app:raw-security-scenario}
+
+Table~\ref{tab:app-security-by-scenario} excerpts \texttt{export/03\_security\_by\_scenario.csv}. Every listed scenario achieved \texttt{expectation\_met\_rate\_pct = 100.0} with zero false acceptances and false rejections.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Security battery: expectation-met rate by scenario (excerpt)}
+    \label{tab:app-security-by-scenario}
+    \scriptsize
+    \begin{tabular}{|l|l|r|r|r|}
+        \hline
+        \textbf{Mech.} & \textbf{Scenario} & \textbf{$n$} & \textbf{Met \%} & \textbf{Mean ms} \\
+        \hline
+        x509 & valid\_active & 30 & 100.0 & 2.05 \\
+        \hline
+        x509 & replay & 30 & 100.0 & 0.06 \\
+        \hline
+        x509 & revoked\_uav & 30 & 100.0 & 1.85 \\
+        \hline
+        blockchain & valid\_active & 30 & 100.0 & 27.67 \\
+        \hline
+        blockchain & replay & 30 & 100.0 & 0.04 \\
+        \hline
+        blockchain & revoked\_uav & 30 & 100.0 & 20.19 \\
+        \hline
+        blockchain & rpc\_unavailable & 30 & 100.0 & 6945.23 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Maximum-Scale Normal Authentication (Step 43, $n=500$, $c=1$)}
+\label{app:raw-scale}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Blockchain \texttt{valid\_active} at $n=500$, concurrency~1 (step~43)}
+    \label{tab:app-raw-n500}
+    \small
+    \begin{tabular}{|l|r|r|r|r|r|}
+        \hline
+        \textbf{Metric} & \textbf{Value} & \textbf{Metric} & \textbf{Value} \\
+        \hline
+        $n$ measured & 30 & false rejections & 0 \\
+        \hline
+        mean latency (ms) & 28.74 & p95 latency (ms) & 50.42 \\
+        \hline
+        CI$_{95}$ low (ms) & 25.56 & CI$_{95}$ high (ms) & 32.77 \\
+        \hline
+        throughput (rps) & 19.00 & warm-ups excluded & 2 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Audit-Enabled Run (Step 53)}
+\label{app:raw-audit}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Blockchain audit run summary (step 53, audit on)}
+    \label{tab:app-raw-audit}
+    \small
+    \begin{tabular}{|l|r|r|r|r|}
+        \hline
+        \textbf{$n$ measured} & 30 & \textbf{false rejections} & 0 \\
+        \hline
+        \textbf{mean decision (ms)} & 112.79 & \textbf{p95 decision (ms)} & 114.07 \\
+        \hline
+        \textbf{gas used (audit tx)} & 30\,291 & \textbf{confirmations} & 30/30 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\subsection{Representative Observation Rows}
+\label{app:raw-observations}
+
+Table~\ref{tab:app-obs-sample} shows five rows illustrating warm-up exclusion, a valid acceptance, an expected adversarial rejection and an audit transaction with receipt metadata.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Selected \texttt{observations.csv} rows (blockchain security and audit runs)}
+    \label{tab:app-obs-sample}
+    \scriptsize
+    \begin{tabular}{|c|c|c|c|c|r|}
+        \hline
+        \textbf{Warm-up} & \textbf{Scenario} & \textbf{Rep.} & \textbf{Expected} & \textbf{Observed} & \textbf{ms} \\
+        \hline
+        true & valid\_active & 0 & ACCEPTED & ACCEPTED & 43.55 \\
+        \hline
+        false & valid\_active & 0 & ACCEPTED & ACCEPTED & 22.65 \\
+        \hline
+        false & replay & 0 & REPLAY\_DETECTED & REPLAY\_DETECTED & 0.04 \\
+        \hline
+        false & revoked\_uav & 0 & REVOKED\_IDENTITY & REVOKED\_IDENTITY & 20.19 \\
+        \hline
+        false & valid\_active & 0 & ACCEPTED & ACCEPTED & 40.72 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\noindent
+The last row is from the audit-enabled run (step~53); the corresponding row also recorded \texttt{gas\_used=30291} and a non-empty \texttt{tx\_hash}. Audit confirmation latency is reported separately from decision latency (Chapter~\ref{chap:evaluation}).
+
+\section{Final Data Directory Layout}
+\label{app:data-layout}
+
+\begin{lstlisting}[style=csv,caption={Corrected Chapter~5 evidence package layout},label=lst:data-tree,numbers=none]
+results/chapter5_rerun_20260824T233552Z/
+  export/
+    00_manifest.json          # 53/53 steps matched on disk
+    01_environment.json       # host, Besu, PKI, deployment snapshot
+    02_all_summaries_enriched.csv
+    03_security_by_scenario.csv
+    06_audit_observations.csv
+    07_data_quality_report.md
+    00_METRICS.md
+  runs/
+    <53 run directories>/
+      config.json
+      environment.json
+      observations.csv
+      summary.csv
+      system_metrics.csv
+      checksums.sha256
+      charts/
+\end{lstlisting}
+
+\section{Repository Commit, Tag and File Checksums}
+\label{app:reproducibility}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Reproducibility identifiers for the corrected evaluation}
+    \label{tab:app-repro}
+    \small
+    \begin{tabular}{|l|p{0.62\textwidth}|}
+        \hline
+        \textbf{Item} & \textbf{Value} \\
+        \hline
+        Repository & \texttt{github.com/Moana-ocean/UAV-Auth-Platform} \\
+        \hline
+        Commit & \texttt{be8c1ef} --- Fix blockchain key sync and publish corrected Chapter~5 re-run evidence \\
+        \hline
+        Recommended tag & \texttt{chapter5-rerun-20260824} \\
+        \hline
+        Export root & \texttt{results/chapter5\_rerun\_20260824T233552Z/export/} \\
+        \hline
+        Contract source SHA-256 & \texttt{985dbcfde8ac03cae0ecdaf6b6707348f88d65aadfa287080ddf971012b948c3} \\
+        \hline
+        Deployed bytecode SHA-256 & \texttt{fece3e0d05ec63f0f71a2f2a1944f0efb0993b35a66b4de550a1aaeb30d8eec3} \\
+        \hline
+        Deployment transaction & \texttt{0d3791616401a5b545ee1c166343a74e0e29d51ddf18e8461072946e03c425b2} \\
+        \hline
+        Manifest match method & \texttt{factor\_key\_latest\_timestamp} \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{lstlisting}[style=csv,caption={Per-run checksum file (audit run, step 53)},label=lst:checksums,numbers=none]
+12b86f9379ca76e1bbc02d715e7ab24d575373b01317ebe247c5c7fa8c2ed669  blockchain_receipts.jsonl
+536982fdb7c994bae8f4c65a47c2bdbd6fc1dd963e0726c518fab42afad3634e  observations.csv
+92592574f566c93519a74511096698cacef066f91900f02b13c591672856d360  summary.csv
+995e9eb72fb2031220592c7836bde35521b3e98166d342b798f0bb1bea7d966d  config.json
+9ce985bdb6fcda4fc65ed18b121aa0b0b761d575b818e8fcc9728a2e5e055f33  environment.json
+\end{lstlisting}
+
+\noindent
+\textbf{Screenshot guidance for submission.} If the examination rules permit figures in appendices, include: (i)~Docker/Besu status showing four validators and increasing block height; (ii)~the manifest header confirming \texttt{n\_present=53}; and (iii)~the GitHub commit page for \texttt{be8c1ef}. Do not include private keys, certificate PEM files or complete 53-run CSV dumps in the printed dissertation; the archive above is the authoritative evidence store.

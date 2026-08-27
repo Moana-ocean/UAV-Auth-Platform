@@ -1,0 +1,226 @@
+% Appendix B: Experimental configuration and execution commands
+
+\chapter{Experimental Configuration and Execution Commands}
+\label{app:experimental-config}
+
+This appendix records the Besu/QBFT network, X.509 PKI baseline, controlled experiment parameters, 53-step execution matrix and the commands used to reproduce the corrected Chapter~5 evaluation (export root \texttt{chapter5\_rerun\_20260824T233552Z}).
+
+\section{Hyperledger Besu and QBFT Configuration}
+\label{app:besu-config}
+
+Table~\ref{tab:app-besu-params} summarises the permissioned ledger settings. Four validator containers (\texttt{hyperledger/besu:26.7.1}) were co-located on the evaluation host via Docker Compose. This configuration supports functional testing only; it does not demonstrate organisational validator independence.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Besu network parameters (Chapter~5 evaluation)}
+    \label{tab:app-besu-params}
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Parameter} & \textbf{Value} \\
+        \hline
+        Client & Hyperledger Besu 26.7.1 \\
+        \hline
+        Consensus & QBFT (4 validators) \\
+        \hline
+        Chain ID & 20245 (\texttt{0x4f15}) \\
+        \hline
+        Block period & 2\,s \\
+        \hline
+        QBFT epoch length & 30\,000 blocks \\
+        \hline
+        QBFT request timeout & 10\,s \\
+        \hline
+        Primary JSON-RPC & \texttt{http://127.0.0.1:8545} \\
+        \hline
+        Contract address & \texttt{0x25629De856e42E1D2d52C8916622938C20A37Cc8} \\
+        \hline
+        Solidity compiler & 0.8.24 \\
+        \hline
+        Registrar (RA) account & \texttt{0x80970C02408d19cc3D8D504400F26Ccb6711DaB1} \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{lstlisting}[style=json,caption={QBFT genesis excerpt (\texttt{besu/network/genesis.json})},label=lst:genesis]
+{
+  "config": {
+    "chainId": 20245,
+    "qbft": {
+      "blockperiodseconds": 2,
+      "epochlength": 30000,
+      "requesttimeoutseconds": 10
+    }
+  },
+  "gasLimit": "0x1fffffffffffff"
+}
+\end{lstlisting}
+
+\begin{lstlisting}[style=yaml,caption={Validator service excerpt (\texttt{besu/docker-compose.yml})},label=lst:docker-compose]
+validator1:
+  image: hyperledger/besu:26.7.1
+  command:
+    - --genesis-file=/opt/besu/genesis.json
+    - --rpc-http-enabled
+    - --rpc-http-api=ETH,NET,WEB3,QBFT,ADMIN,TXPOOL,DEBUG
+    - --rpc-http-port=8545
+    - --min-gas-price=0
+  ports:
+    - "8545:8545"
+\end{lstlisting}
+
+\section{X.509 PKI Baseline Configuration}
+\label{app:pki-config}
+
+The PKI baseline used a project-local two-tier hierarchy (root CA and issuing CA) with CRL-based revocation. Application authentication signatures used ECDSA P-256 with SHA-256, matching the blockchain path.
+
+\begin{table}[htbp]
+    \centering
+    \caption{PKI baseline parameters at environment capture}
+    \label{tab:app-pki-params}
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Parameter} & \textbf{Value} \\
+        \hline
+        Trust anchor & Local root CA + issuing CA \\
+        \hline
+        Revocation method & Local CRL (\texttt{issuing.crl}) \\
+        \hline
+        Issued certificates (population) & 500 \\
+        \hline
+        Revoked serials on CRL & 5 \\
+        \hline
+        Special test identities & revoked, expired, untrusted issuer, limited role (1 each) \\
+        \hline
+        Application signature & ECDSA P-256 / SHA-256 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{lstlisting}[style=python,caption={PKI directory layout (\texttt{app/auth/x509/pki.py}, excerpt)},label=lst:pki-layout]
+class LocalPKI:
+    @property
+    def root_cert_path(self) -> Path:
+        return self.ca_dir / "root_ca.pem"
+    @property
+    def issuing_cert_path(self) -> Path:
+        return self.ca_dir / "issuing_ca.pem"
+    @property
+    def crl_path(self) -> Path:
+        return self.ca_dir / "issuing.crl"
+\end{lstlisting}
+
+Private key material (\texttt{*.pem}, \texttt{*.key}) is excluded from the public repository and must not be reproduced in the dissertation.
+
+\section{Controlled Experiment Parameters}
+\label{app:exp-params}
+
+\begin{table}[htbp]
+    \centering
+    \caption{Shared experiment parameters (all matrix runs)}
+    \label{tab:app-exp-params}
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Parameter} & \textbf{Value} \\
+        \hline
+        Measured repetitions per scenario & 30 \\
+        \hline
+        Warm-up repetitions (stored, excluded) & 2 \\
+        \hline
+        Random seed & 42 \\
+        \hline
+        Challenge lifetime & 5.0\,s \\
+        \hline
+        Requested operation & \texttt{telemetry.submit} \\
+        \hline
+        RPC timeout & 5.0\,s \\
+        \hline
+        Authentication timeout & 10.0\,s \\
+        \hline
+        Audit confirmation blocks & 1 \\
+        \hline
+        Resource sample interval & 0.5\,s \\
+        \hline
+        Identity levels $n$ & 10, 50, 100, 250, 500 \\
+        \hline
+        Concurrency levels & 1, 5, 10, 25, 50 \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\begin{lstlisting}[style=python,caption={Matrix constants (\texttt{scripts/run\_chapter5\_matrix.py})},label=lst:matrix-constants]
+IDENTITY_LEVELS = (10, 50, 100, 250, 500)
+CONCURRENCY_LEVELS = (1, 5, 10, 25, 50)
+REPETITIONS = 30
+WARMUP = 2
+\end{lstlisting}
+
+\section{53-Step Execution Matrix}
+\label{app:matrix}
+
+Table~\ref{tab:app-matrix} lists the ordered Chapter~5 matrix. Steps~1--2 execute the security battery; steps~3--52 execute \texttt{valid\_active} scalability workloads; step~53 enables blockchain audit transactions. At each identity level, X.509 runs precede blockchain runs.
+
+\begin{table}[htbp]
+    \centering
+    \caption{53-step Chapter~5 execution matrix}
+    \label{tab:app-matrix}
+    \small
+    \begin{tabular}{|c|l|c|c|l|c|c|}
+        \hline
+        \textbf{Step} & \textbf{Phase} & \textbf{$n$} & \textbf{Conc.} & \textbf{Mechanism} & \textbf{Reps} & \textbf{Audit} \\
+        \hline
+        1 & security battery & 10 & 1 & X.509 & 30 & off \\
+        \hline
+        2 & security battery & 10 & 1 & blockchain & 30 & off \\
+        \hline
+        3--12 & valid\_active scale & 10 & 1,5,10,25,50 & X.509 then blockchain & 30 & off \\
+        \hline
+        13--22 & valid\_active scale & 50 & 1,5,10,25,50 & X.509 then blockchain & 30 & off \\
+        \hline
+        23--32 & valid\_active scale & 100 & 1,5,10,25,50 & X.509 then blockchain & 30 & off \\
+        \hline
+        33--42 & valid\_active scale & 250 & 1,5,10,25,50 & X.509 then blockchain & 30 & off \\
+        \hline
+        43--52 & valid\_active scale & 500 & 1,5,10,25,50 & X.509 then blockchain & 30 & off \\
+        \hline
+        53 & audit commit & 10 & 1 & blockchain & 30 & on \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\textbf{Security battery scenarios.}
+X.509 (13): \texttt{valid\_active}, \texttt{unknown\_uav}, \texttt{impersonation\_wrong\_key}, \texttt{replay}, three tamper cases, \texttt{expired\_challenge}, \texttt{revoked\_uav}, \texttt{unauthorised\_operation}, \texttt{malformed}, \texttt{expired\_certificate}, \texttt{untrusted\_issuer}.
+Blockchain (12): same set except \texttt{expired\_certificate} and \texttt{untrusted\_issuer} are replaced by \texttt{rpc\_unavailable}.
+
+The manifest for the corrected rerun recorded \texttt{n\_steps=53}, \texttt{n\_present=53}, \texttt{n\_missing=0} (Appendix~\ref{app:reproducibility}).
+
+\section{Execution Commands}
+\label{app:commands}
+
+The following PowerShell commands reproduce the evaluation platform and corrected matrix from repository commit \texttt{be8c1ef}:
+
+\begin{lstlisting}[style=powershell,caption={Environment setup and Besu deployment},label=lst:cmd-setup]
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m app.cli setup
+.\.venv\Scripts\python.exe -m scripts.besu_network up
+.\.venv\Scripts\python.exe -m app.cli deploy-contract
+.\.venv\Scripts\python.exe -m app.cli init-identities --count 500
+\end{lstlisting}
+
+\begin{lstlisting}[style=powershell,caption={Chapter~5 matrix and export},label=lst:cmd-matrix]
+.\.venv\Scripts\python.exe -m scripts.run_chapter5_matrix `
+  --output-root results/chapter5_rerun_20260824T233552Z/runs
+.\.venv\Scripts\python.exe -m app.cli export-chapter5 `
+  --runs-root results/chapter5_rerun_20260824T233552Z/runs
+\end{lstlisting}
+
+Dry-run (print planned order only):
+\begin{lstlisting}[style=powershell,numbers=none]
+.\.venv\Scripts\python.exe -m scripts.run_chapter5_matrix --dry-run
+\end{lstlisting}
+
+Each run directory is named:
+\begin{quote}
+\small\ttfamily
+n\{identities\}-identities\_c\{concurrency\}-conc\_mech-\{x509|blockchain\}-1backend\_\{scenario\}\_r30\_audit-\{on|off\}\_\{timestamp\}
+\end{quote}

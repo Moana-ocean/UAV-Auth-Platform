@@ -1,0 +1,64 @@
+% Add to your main.tex preamble (before \begin{document}):
+%   \input{docs/appendices/listings_setup.tex}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codebg}{RGB}{248,248,248}
+\definecolor{codeframe}{RGB}{200,200,200}
+
+\lstdefinestyle{appendix}{
+  backgroundcolor=\color{codebg},
+  basicstyle=\ttfamily\footnotesize,
+  breaklines=true,
+  breakatwhitespace=false,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+  frame=single,
+  rulecolor=\color{codeframe},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  tabsize=2,
+  captionpos=b,
+  aboveskip=0.75em,
+  belowskip=0.75em,
+}
+
+\lstdefinestyle{solidity}{
+  style=appendix,
+  language=[Sharp]C,
+  morekeywords={calldata,external,view,returns,emit,revert,modifier,constructor,struct,enum,mapping,bytes32,uint8,uint64,bytes,string,sha256,keccak256},
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray}\itshape,
+}
+
+\lstdefinestyle{python}{
+  style=appendix,
+  language=Python,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{teal},
+}
+
+\lstdefinestyle{json}{
+  style=appendix,
+  language=json,
+}
+
+\lstdefinestyle{yaml}{
+  style=appendix,
+  language=yaml,
+}
+
+\lstdefinestyle{powershell}{
+  style=appendix,
+  language=bash,
+}
+
+\lstdefinestyle{csv}{
+  style=appendix,
+  basicstyle=\ttfamily\scriptsize,
+  numbers=none,
+  frame=single,
+}

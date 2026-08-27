@@ -1,0 +1,244 @@
+% Appendix A: Smart contract and on-chain identity management
+% Repository: contracts/contracts/UAVIdentityRegistry.sol
+
+\chapter{Smart Contract and On-Chain Identity Management}
+\label{app:smart-contract}
+
+This appendix documents the permissioned identity registry used by the blockchain authentication mechanism in Chapter~\ref{chap:proposed-scheme} and evaluated in Chapter~\ref{chap:evaluation}. Authentication decisions are made by the GCS Python service after a read-only \texttt{eth\_call} to \texttt{getRecord}; the contract stores identity bindings, operational status, roles and optional audit events. State-changing registration, revocation and role updates require a registrar account.
+
+\section{Contract Structure and State Model}
+\label{app:contract-structure}
+
+Listing~\ref{lst:registry-struct} defines the on-chain record layout and lifecycle states. Status values are encoded as \texttt{None}~(0), \texttt{Active}~(1), \texttt{Suspended}~(2) and \texttt{Revoked}~(3). Role values follow the application constants: \texttt{1}=delivery, \texttt{2}=telemetry, \texttt{3}=observer.
+
+\begin{lstlisting}[style=solidity,caption={Identity record and status model (\texttt{UAVIdentityRegistry.sol}, lines 8--30)},label=lst:registry-struct]
+enum Status {
+    None,
+    Active,
+    Suspended,
+    Revoked
+}
+
+struct Record {
+    string uavId;
+    bytes publicKey;
+    bytes32 publicKeyHash;
+    uint8 role;
+    Status status;
+    uint64 registeredAt;
+    uint64 updatedAt;
+    uint64 registeredBlock;
+    uint64 updatedBlock;
+}
+
+address public admin;
+mapping(address => bool) public registrars;
+mapping(bytes32 => Record) private records;
+\end{lstlisting}
+
+\section{Registration, Revocation and Role Management}
+\label{app:contract-lifecycle}
+
+\subsection{Registration}
+\label{app:contract-register}
+
+\texttt{register} creates a new active record. Duplicate active or suspended registrations revert with \texttt{DuplicateRegistration}; re-registration after revocation is blocked by \texttt{AlreadyRevoked}.
+
+\begin{lstlisting}[style=solidity,caption={Registration function (lines 80--105)},label=lst:registry-register]
+function register(
+    string calldata uavId,
+    bytes calldata publicKey,
+    uint8 role
+) external onlyRegistrar {
+    if (bytes(uavId).length == 0 || publicKey.length == 0 || role == 0)
+        revert InvalidInput();
+    bytes32 idHash = _id(uavId);
+    Record storage rec = records[idHash];
+    if (rec.status == Status.Active || rec.status == Status.Suspended) {
+        revert DuplicateRegistration();
+    }
+    if (rec.status == Status.Revoked) {
+        revert AlreadyRevoked();
+    }
+    bytes32 pkHash = sha256(publicKey);
+    rec.uavId = uavId;
+    rec.publicKey = publicKey;
+    rec.publicKeyHash = pkHash;
+    rec.role = role;
+    rec.status = Status.Active;
+    rec.registeredAt = uint64(block.timestamp);
+    rec.updatedAt = uint64(block.timestamp);
+    rec.registeredBlock = uint64(block.number);
+    rec.updatedBlock = uint64(block.number);
+    emit Registered(idHash, uavId, pkHash, role, uint64(block.timestamp));
+}
+\end{lstlisting}
+
+\subsection{Key and Role Updates}
+\label{app:contract-updates}
+
+\texttt{updateKey} and \texttt{updateRole} mutate existing non-revoked identities. These functions were used during experiment setup to synchronise on-chain public keys with locally regenerated signing material.
+
+\begin{lstlisting}[style=solidity,caption={Key and role update functions (lines 107--124)},label=lst:registry-updates]
+function updateKey(string calldata uavId, bytes calldata publicKey)
+    external onlyRegistrar
+{
+    if (publicKey.length == 0) revert InvalidInput();
+    Record storage rec = _requireMutable(uavId);
+    rec.publicKey = publicKey;
+    rec.publicKeyHash = sha256(publicKey);
+    rec.updatedAt = uint64(block.timestamp);
+    rec.updatedBlock = uint64(block.number);
+    emit KeyUpdated(_id(uavId), uavId, rec.publicKeyHash,
+                    uint64(block.timestamp));
+}
+
+function updateRole(string calldata uavId, uint8 role) external onlyRegistrar {
+    if (role == 0) revert InvalidInput();
+    Record storage rec = _requireMutable(uavId);
+    rec.role = role;
+    rec.updatedAt = uint64(block.timestamp);
+    rec.updatedBlock = uint64(block.number);
+    emit RoleUpdated(_id(uavId), uavId, role, uint64(block.timestamp));
+}
+\end{lstlisting}
+
+\subsection{Suspension, Reinstatement and Revocation}
+\label{app:contract-revocation}
+
+\begin{lstlisting}[style=solidity,caption={Status transitions (lines 126--152)},label=lst:registry-revoke]
+function suspend(string calldata uavId) external onlyRegistrar {
+    Record storage rec = _requireMutable(uavId);
+    rec.status = Status.Suspended;
+    rec.updatedAt = uint64(block.timestamp);
+    rec.updatedBlock = uint64(block.number);
+    emit StatusUpdated(_id(uavId), uavId, Status.Suspended,
+                       uint64(block.timestamp));
+}
+
+function reinstate(string calldata uavId) external onlyRegistrar {
+    bytes32 idHash = _id(uavId);
+    Record storage rec = records[idHash];
+    if (rec.status == Status.None) revert UnknownIdentity();
+    rec.status = Status.Active;
+    rec.updatedAt = uint64(block.timestamp);
+    rec.updatedBlock = uint64(block.number);
+    emit StatusUpdated(idHash, uavId, Status.Active, uint64(block.timestamp));
+}
+
+function revoke(string calldata uavId) external onlyRegistrar {
+    Record storage rec = _requireKnown(uavId);
+    if (rec.status == Status.Revoked) revert AlreadyRevoked();
+    rec.status = Status.Revoked;
+    rec.updatedAt = uint64(block.timestamp);
+    rec.updatedBlock = uint64(block.number);
+    emit Revoked(_id(uavId), uavId, uint64(block.timestamp));
+    emit StatusUpdated(_id(uavId), uavId, Status.Revoked,
+                       uint64(block.timestamp));
+}
+\end{lstlisting}
+
+\subsection{Read-Only Identity Retrieval}
+\label{app:contract-getrecord}
+
+Authentication uses \texttt{getRecord} via \texttt{eth\_call}; this path does not submit a transaction or consume gas on the ledger.
+
+\begin{lstlisting}[style=solidity,caption={Read-only registry lookup (lines 160--187)},label=lst:registry-getrecord]
+function getRecord(string calldata uavId)
+    external
+    view
+    returns (
+        string memory id,
+        bytes memory publicKey,
+        bytes32 publicKeyHash,
+        uint8 role,
+        uint8 status,
+        uint64 registeredAt,
+        uint64 updatedAt,
+        uint64 registeredBlock,
+        uint64 updatedBlock
+    )
+{
+    Record storage rec = records[_id(uavId)];
+    return (
+        rec.uavId,
+        rec.publicKey,
+        rec.publicKeyHash,
+        rec.role,
+        uint8(rec.status),
+        rec.registeredAt,
+        rec.updatedAt,
+        rec.registeredBlock,
+        rec.updatedBlock
+    );
+}
+\end{lstlisting}
+
+\section{Administrator Privileges and Optional Audit}
+\label{app:contract-admin}
+
+The deployer becomes \texttt{admin} and an authorised \texttt{registrar}. Only \texttt{admin} may transfer administration or grant/revoke registrar rights. \texttt{recordAuthAudit} emits an event for optional receipt-backed logging; it does not affect accept/reject decisions.
+
+\begin{lstlisting}[style=solidity,caption={Access control and audit (lines 48--78, 154--158)},label=lst:registry-admin]
+modifier onlyAdmin() {
+    if (msg.sender != admin) revert NotAdmin();
+    _;
+}
+
+modifier onlyRegistrar() {
+    if (!registrars[msg.sender] && msg.sender != admin) revert NotRegistrar();
+    _;
+}
+
+function transferAdmin(address newAdmin) external onlyAdmin { /* ... */ }
+function setRegistrar(address registrar, bool allowed) external onlyAdmin { /* ... */ }
+
+/// @notice Optional audit record. Does not affect authentication decisions.
+function recordAuthAudit(string calldata uavId, bytes32 outcomeHash)
+    external onlyRegistrar
+{
+    _requireKnown(uavId);
+    emit AuthAudited(_id(uavId), uavId, outcomeHash, uint64(block.timestamp));
+}
+\end{lstlisting}
+
+\section{GCS Integration: Read-Only Lookup and Population Sync}
+\label{app:contract-integration}
+
+Listing~\ref{lst:adapter-lookup} shows the authentication-time registry query. Listing~\ref{lst:runner-sync} documents the experiment-runner logic that registers missing identities and synchronises special scenario keys before matrix execution.
+
+\begin{lstlisting}[style=python,caption={Blockchain identity lookup with RPC retry (\texttt{adapter.py})},label=lst:adapter-lookup]
+def lookup(self, uav_id: str, certificate_der: bytes | None = None):
+    for attempt in range(8):
+        try:
+            rec = self.adapter.get_record(uav_id)
+            break
+        except Exception as exc:
+            time.sleep(0.25 * (2**attempt) if attempt < 5 else 2.0)
+    if rec["status"] == STATUS_NONE or not rec["public_key"]:
+        return None, "UNKNOWN_IDENTITY"
+    record = IdentityRecord(
+        uav_id=uav_id,
+        public_key_bytes=rec["public_key"],
+        role=int(rec["role"]),
+        status=int(rec["status"]),
+        source="blockchain",
+    )
+    return record, ""
+\end{lstlisting}
+
+\begin{lstlisting}[style=python,caption={On-chain population synchronisation (\texttt{runner.py}, excerpt)},label=lst:runner-sync]
+def register_population_on_chain(pop: IdentityPopulation):
+  """Register or synchronise local UAV public keys onto the registry.
+  If an identity is Active/Suspended but the on-chain public key does not
+  match the local signing key, call updateKey (and updateRole when needed).
+  """
+  for rec in pop.load_meta().get("identities", []):
+      existing = _get_record_retry(adapter, rec["uav_id"])
+      if int(existing["status"]) == 0:
+          adapter.register(uav_id, pk, role)
+      elif uav_id in specials and chain_pk != pk:
+          adapter.update_key(uav_id, pk)
+\end{lstlisting}
+
+The full contract source is archived at commit \texttt{be8c1ef} in repository \texttt{UAV-Auth-Platform} (\texttt{contracts/contracts/UAVIdentityRegistry.sol}). Deployed bytecode SHA-256: \texttt{fece3e0d05ec63f0f71a2f2a1944f0efb0993b35a66b4de550a1aaeb30d8eec3}.

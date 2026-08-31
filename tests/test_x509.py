@@ -95,3 +95,69 @@ def test_wrong_key_x509(tmp_path):
     ch = svc.create_challenge(km.uav_id)
     req = svc.build_signed_request(bad, ch, "telemetry.submit", certificate_der=der)
     assert svc.authenticate(req).outcome == "INVALID_SIGNATURE"
+
+
+def test_not_yet_valid_cert(tmp_path):
+    pki, km, _, _, _ = _setup(tmp_path)
+    now = datetime.now(UTC)
+    cert = pki.issue_uav_certificate(
+        "UAV-FUTURE",
+        km.public_key,
+        not_before=now + timedelta(days=1),
+        not_after=now + timedelta(days=10),
+    )
+    backend = X509IdentityBackend(pki, {"UAV-FUTURE": ROLE_DELIVERY})
+    svc = GCSAuthService(backend, NonceStore())
+    km2 = UAVKeyMaterial(
+        "UAV-FUTURE", km.private_key, km.public_key, km.public_key_bytes, ROLE_DELIVERY
+    )
+    ch = svc.create_challenge("UAV-FUTURE")
+    req = svc.build_signed_request(
+        km2, ch, "telemetry.submit", certificate_der=cert.public_bytes(serialization.Encoding.DER)
+    )
+    assert svc.authenticate(req).outcome == "CERTIFICATE_EXPIRED"
+
+
+def test_cn_mismatch(tmp_path):
+    pki, km, _, _, _ = _setup(tmp_path)
+    cert = pki.issue_uav_certificate("UAV-OTHER", km.public_key)
+    backend = X509IdentityBackend(pki, {"UAV-VALID": ROLE_DELIVERY})
+    svc = GCSAuthService(backend, NonceStore())
+    ch = svc.create_challenge("UAV-VALID")
+    req = svc.build_signed_request(
+        km, ch, "telemetry.submit", certificate_der=cert.public_bytes(serialization.Encoding.DER)
+    )
+    assert svc.authenticate(req).outcome == "UNKNOWN_IDENTITY"
+
+
+def test_missing_key_usage_extension(tmp_path):
+    pki = LocalPKI(tmp_path)
+    pki.initialise()
+    key = generate_uav_key()
+    # Issue without going through standard path - use internal issue with minimal extensions
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.x509.oid import NameOID
+
+    issuing_key = serialization.load_pem_private_key(pki.issuing_key_path.read_bytes(), password=None)
+    subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, "UAV-NOKU")])
+    cert = (
+        x509.CertificateBuilder()
+        .subject_name(subject)
+        .issuer_name(pki.issuing_cert().subject)
+        .public_key(key.public_key())
+        .serial_number(pki._next_serial())
+        .not_valid_before(datetime.now(UTC) - timedelta(days=1))
+        .not_valid_after(datetime.now(UTC) + timedelta(days=30))
+        .sign(issuing_key, hashes.SHA256())
+    )
+    backend = X509IdentityBackend(pki, {"UAV-NOKU": ROLE_DELIVERY})
+    svc = GCSAuthService(backend, NonceStore())
+    km = UAVKeyMaterial(
+        "UAV-NOKU", key, key.public_key(), public_bytes_uncompressed(key.public_key()), ROLE_DELIVERY
+    )
+    ch = svc.create_challenge("UAV-NOKU")
+    req = svc.build_signed_request(
+        km, ch, "telemetry.submit", certificate_der=cert.public_bytes(serialization.Encoding.DER)
+    )
+    assert svc.authenticate(req).outcome == "MALFORMED_REQUEST"

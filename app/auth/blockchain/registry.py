@@ -104,6 +104,9 @@ class RegistryAdapter:
     def revoke(self, uav_id: str) -> dict[str, Any]:
         return self._transact(self.contract.functions.revoke(uav_id))
 
+    def suspend(self, uav_id: str) -> dict[str, Any]:
+        return self._transact(self.contract.functions.suspend(uav_id))
+
     def reinstate(self, uav_id: str) -> dict[str, Any]:
         return self._transact(self.contract.functions.reinstate(uav_id))
 
@@ -117,6 +120,9 @@ class RegistryAdapter:
         if len(outcome_hash) != 32:
             raise ValueError("outcome hash must be 32 bytes")
         return self._transact(self.contract.functions.recordAuthAudit(uav_id, outcome_hash))
+
+    def transfer_admin(self, new_admin: str) -> dict[str, Any]:
+        return self._transact(self.contract.functions.transferAdmin(new_admin))
 
     def deploy(self) -> dict[str, Any]:
         acct = self._account()

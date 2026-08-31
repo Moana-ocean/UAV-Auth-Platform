@@ -6,6 +6,9 @@ pragma solidity ^0.8.24;
 ///         research network. Stores no customer, location or private-key data.
 /// @dev Checks-effects-interactions: no external calls after state updates.
 contract UAVIdentityRegistry {
+    uint8 internal constant ROLE_MAX = 3;
+    uint16 internal constant MAX_PUBLIC_KEY_BYTES = 128;
+
     enum Status {
         None,
         Active,
@@ -82,7 +85,9 @@ contract UAVIdentityRegistry {
         bytes calldata publicKey,
         uint8 role
     ) external onlyRegistrar {
-        if (bytes(uavId).length == 0 || publicKey.length == 0 || role == 0) revert InvalidInput();
+        if (bytes(uavId).length == 0 || publicKey.length == 0) revert InvalidInput();
+        _validateRole(role);
+        _validatePublicKey(publicKey);
         bytes32 idHash = _id(uavId);
         Record storage rec = records[idHash];
         if (rec.status == Status.Active || rec.status == Status.Suspended) {
@@ -105,7 +110,7 @@ contract UAVIdentityRegistry {
     }
 
     function updateKey(string calldata uavId, bytes calldata publicKey) external onlyRegistrar {
-        if (publicKey.length == 0) revert InvalidInput();
+        _validatePublicKey(publicKey);
         Record storage rec = _requireMutable(uavId);
         rec.publicKey = publicKey;
         rec.publicKeyHash = sha256(publicKey);
@@ -115,7 +120,7 @@ contract UAVIdentityRegistry {
     }
 
     function updateRole(string calldata uavId, uint8 role) external onlyRegistrar {
-        if (role == 0) revert InvalidInput();
+        _validateRole(role);
         Record storage rec = _requireMutable(uavId);
         rec.role = role;
         rec.updatedAt = uint64(block.timestamp);
@@ -135,6 +140,8 @@ contract UAVIdentityRegistry {
         bytes32 idHash = _id(uavId);
         Record storage rec = records[idHash];
         if (rec.status == Status.None) revert UnknownIdentity();
+        if (rec.status == Status.Revoked) revert AlreadyRevoked();
+        if (rec.status == Status.Active) revert DuplicateRegistration();
         rec.status = Status.Active;
         rec.updatedAt = uint64(block.timestamp);
         rec.updatedBlock = uint64(block.number);
@@ -184,6 +191,14 @@ contract UAVIdentityRegistry {
             rec.registeredBlock,
             rec.updatedBlock
         );
+    }
+
+    function _validateRole(uint8 role) internal pure {
+        if (role == 0 || role > ROLE_MAX) revert InvalidInput();
+    }
+
+    function _validatePublicKey(bytes calldata publicKey) internal pure {
+        if (publicKey.length == 0 || publicKey.length > MAX_PUBLIC_KEY_BYTES) revert InvalidInput();
     }
 
     function _id(string calldata uavId) internal pure returns (bytes32) {

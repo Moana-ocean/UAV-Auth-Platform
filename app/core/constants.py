@@ -7,6 +7,12 @@ PROTOCOL_VERSION = "1"
 DEFAULT_GCS_ID = "GCS-01"
 CHAIN_ID = 20245
 DEFAULT_RPC_URL = "http://127.0.0.1:8545"
+RPC_FALLBACK_URLS = (
+    "http://127.0.0.1:8545",
+    "http://127.0.0.1:8555",
+    "http://127.0.0.1:8565",
+    "http://127.0.0.1:8575",
+)
 BESU_IMAGE = "hyperledger/besu:26.7.1"
 SOLC_VERSION = "0.8.24"
 SIGNATURE_ALGORITHM = "ECDSA_P256_SHA256"
@@ -61,6 +67,7 @@ ADVERSARIAL_SCENARIOS = frozenset(SCENARIOS) - {"valid_active", "concurrent_vali
 ROLE_DELIVERY = 1
 ROLE_TELEMETRY = 2
 ROLE_OBSERVER = 3
+ROLE_MAX = 3
 ROLE_NAMES = {ROLE_DELIVERY: "delivery", ROLE_TELEMETRY: "telemetry", ROLE_OBSERVER: "observer"}
 
 OPERATION_TELEMETRY_SUBMIT = "telemetry.submit"

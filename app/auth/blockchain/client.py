@@ -9,13 +9,29 @@ from typing import Any
 from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
 
-from app.core.constants import CHAIN_ID, DEFAULT_RPC_URL
+from app.core.constants import CHAIN_ID, DEFAULT_RPC_URL, RPC_FALLBACK_URLS
 
 
 def connect(rpc_url: str = DEFAULT_RPC_URL, timeout_s: float = 5.0) -> Web3:
     w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={"timeout": timeout_s}))
     w3.middleware_onion.inject(ExtraDataToPOAMiddleware, layer=0)
     return w3
+
+
+def first_reachable_url(
+    urls: tuple[str, ...] | None = None, timeout_s: float = 2.0
+) -> str | None:
+    for url in urls or RPC_FALLBACK_URLS:
+        if is_reachable(url, timeout_s=timeout_s):
+            return url
+    return None
+
+
+def connect_first(timeout_s: float = 5.0) -> tuple[Web3, str]:
+    url = first_reachable_url(timeout_s=min(timeout_s, 2.0))
+    if url is None:
+        raise ConnectionError("no Besu RPC endpoint reachable")
+    return connect(url, timeout_s=timeout_s), url
 
 
 def is_reachable(rpc_url: str = DEFAULT_RPC_URL, timeout_s: float = 2.0) -> bool:

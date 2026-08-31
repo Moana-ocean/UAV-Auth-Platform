@@ -21,7 +21,7 @@ from app.auth.common.protocol import GCSAuthService
 from app.auth.x509.adapter import X509IdentityBackend, load_roles
 from app.core.canonical import payload_digest_hex
 from app.core.config import ExperimentConfig
-from app.core.constants import DEFAULT_RPC_URL
+from app.core.constants import DEFAULT_RPC_URL, RPC_FALLBACK_URLS
 from app.core.schemas import Observation
 from app.experiments.identities import SPECIAL_IDS, IdentityPopulation
 from app.experiments.sampler import ResourceSampler
@@ -90,17 +90,26 @@ def make_x509_service(cfg: ExperimentConfig, pop: IdentityPopulation) -> GCSAuth
 
 def make_blockchain_service(cfg: ExperimentConfig, rpc_url: str | None = None) -> GCSAuthService:
     from app.core.nonce import NonceStore
+    from app.auth.blockchain.client import connect_first
 
     dep = {}
     if deployment_path().exists():
         dep = json.loads(deployment_path().read_text(encoding="utf-8"))
-    url = rpc_url or dep.get("rpc_url") or DEFAULT_RPC_URL
+    if rpc_url:
+        url = rpc_url
+    else:
+        try:
+            _, url = connect_first(timeout_s=cfg.rpc_timeout_s)
+        except ConnectionError:
+            url = dep.get("rpc_url") or DEFAULT_RPC_URL
     adapter = RegistryAdapter(
         rpc_url=url,
         address=dep.get("address"),
         private_key=_load_ra_key(),
         timeout_s=cfg.rpc_timeout_s,
         confirmation_blocks=cfg.confirmation_blocks,
+        rpc_urls=RPC_FALLBACK_URLS,
+        read_timeout_s=min(2.5, cfg.rpc_timeout_s),
     )
     backend = BlockchainIdentityBackend(adapter, audit_tx=cfg.audit_tx_enabled)
     return GCSAuthService(
@@ -403,6 +412,7 @@ def register_population_on_chain(pop: IdentityPopulation) -> list[dict[str, Any]
         address=dep["address"],
         private_key=_load_ra_key(),
         timeout_s=30,
+        rpc_urls=RPC_FALLBACK_URLS,
     )
     receipts = []
     specials = set(SPECIAL_IDS)

@@ -1,0 +1,394 @@
+{
+  "started_at": "2026-08-31T03:48:06.505226+00:00",
+  "finished_at": "2026-08-31T03:49:03.435956+00:00",
+  "dry_run": false,
+  "output_root": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z",
+  "n_jobs": 24,
+  "n_observations": 720,
+  "completed": [
+    {
+      "batch_id": 1,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "x509",
+      "notes": "abba-b1_n10_c1_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": false
+      },
+      "run_id": "abba-b1_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034806Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b1_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034806Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 1,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "blockchain",
+      "notes": "abba-b1_n10_c1_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b1_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034821Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b1_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034821Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 1,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "x509",
+      "notes": "abba-b1_n500_c25_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b1_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034823Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b1_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034823Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 1,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "blockchain",
+      "notes": "abba-b1_n500_c25_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b1_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034825Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b1_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034825Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 1,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "x509",
+      "notes": "abba-b1_n500_c50_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b1_n500-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034827Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b1_n500-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034827Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 1,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "blockchain",
+      "notes": "abba-b1_n500_c50_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b1_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034828Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b1_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034828Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "blockchain",
+      "notes": "abba-b2_n10_c1_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034830Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b2_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034830Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "x509",
+      "notes": "abba-b2_n10_c1_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034833Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b2_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034833Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "blockchain",
+      "notes": "abba-b2_n500_c25_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034834Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b2_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034834Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "x509",
+      "notes": "abba-b2_n500_c25_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034836Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b2_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034836Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "blockchain",
+      "notes": "abba-b2_n500_c50_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034838Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b2_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034838Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "x509",
+      "notes": "abba-b2_n500_c50_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n500-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034839Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b2_n500-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034839Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "blockchain",
+      "notes": "abba-b3_n10_c1_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034841Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b3_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034841Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "x509",
+      "notes": "abba-b3_n10_c1_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034843Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b3_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034843Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "blockchain",
+      "notes": "abba-b3_n500_c25_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034845Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b3_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034845Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "x509",
+      "notes": "abba-b3_n500_c25_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034847Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b3_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034847Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "blockchain",
+      "notes": "abba-b3_n500_c50_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034848Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b3_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034848Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "x509",
+      "notes": "abba-b3_n500_c50_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n500-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034851Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b3_n500-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034851Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "x509",
+      "notes": "abba-b4_n10_c1_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034852Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b4_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034852Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "blockchain",
+      "notes": "abba-b4_n10_c1_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034854Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b4_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034854Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "x509",
+      "notes": "abba-b4_n500_c25_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034856Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b4_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034856Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "blockchain",
+      "notes": "abba-b4_n500_c25_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034857Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b4_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034857Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "x509",
+      "notes": "abba-b4_n500_c50_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n500-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034859Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b4_n500-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T034859Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "blockchain",
+      "notes": "abba-b4_n500_c50_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034900Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\abba_runs\\abba-b4_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T034900Z",
+      "status": "completed"
+    }
+  ]
+}

@@ -220,7 +220,7 @@ The last row is from the audit-enabled run (step~53); the corresponding row also
 \label{app:data-layout}
 
 \begin{lstlisting}[style=csv,caption={Corrected Chapter~5 evidence package layout},label=lst:data-tree,numbers=none]
-results/chapter5_rerun_20260824T233552Z/
+results/dissertation_final_20260831T015600Z/
   export/
     00_manifest.json          # 53/53 steps matched on disk
     01_environment.json       # host, Besu, PKI, deployment snapshot
@@ -254,17 +254,17 @@ results/chapter5_rerun_20260824T233552Z/
         \hline
         Repository & \texttt{github.com/Moana-ocean/UAV-Auth-Platform} \\
         \hline
-        Commit & \texttt{be8c1ef} --- Fix blockchain key sync and publish corrected Chapter~5 re-run evidence \\
+        Commit & Tag \texttt{dissertation-final-20260831} on branch \texttt{final-hardening} \\
         \hline
-        Recommended tag & \texttt{chapter5-rerun-20260824} \\
+        Prior tag (superseded) & \texttt{chapter5-rerun-20260824} $\rightarrow$ \texttt{be8c1ef} \\
         \hline
-        Export root & \texttt{results/chapter5\_rerun\_20260824T233552Z/export/} \\
+        Export root & \texttt{results/dissertation\_final\_20260831T015600Z/export/} \\
         \hline
-        Contract source SHA-256 & \texttt{985dbcfde8ac03cae0ecdaf6b6707348f88d65aadfa287080ddf971012b948c3} \\
+        Contract source SHA-256 & \texttt{9b28f529ed51938883f42277b83761936ccfd2b9d0fcc57d2587a0f3e0c2992b} \\
         \hline
-        Deployed bytecode SHA-256 & \texttt{fece3e0d05ec63f0f71a2f2a1944f0efb0993b35a66b4de550a1aaeb30d8eec3} \\
+        Deployed bytecode SHA-256 & \texttt{9aaf9bc69a118390888c6fbfbe68f58c942177db78cfb54adafbb0d6d745d53c} \\
         \hline
-        Deployment transaction & \texttt{0d3791616401a5b545ee1c166343a74e0e29d51ddf18e8461072946e03c425b2} \\
+        Deployment transaction & \texttt{dda26470d3d793775beddf91497337b61699402a8cf9b8c7bfd478b89bb5e090} \\
         \hline
         Manifest match method & \texttt{factor\_key\_latest\_timestamp} \\
         \hline
@@ -280,4 +280,4 @@ results/chapter5_rerun_20260824T233552Z/
 \end{lstlisting}
 
 \noindent
-\textbf{Screenshot guidance for submission.} If the examination rules permit figures in appendices, include: (i)~Docker/Besu status showing four validators and increasing block height; (ii)~the manifest header confirming \texttt{n\_present=53}; and (iii)~the GitHub commit page for \texttt{be8c1ef}. Do not include private keys, certificate PEM files or complete 53-run CSV dumps in the printed dissertation; the archive above is the authoritative evidence store.
+\textbf{Screenshot guidance for submission.} If the examination rules permit figures in appendices, include: (i)~Docker/Besu status showing four validators and increasing block height; (ii)~the manifest header confirming \texttt{n\_present=53} and \texttt{07\_data\_quality\_report.md} showing zero anomalies; and (iii)~the \texttt{abba\_progress.json} header confirming \texttt{n\_observations=720}. Do not include private keys, certificate PEM files or complete run CSV dumps in the printed dissertation; the archive above is the authoritative evidence store.

@@ -9,11 +9,12 @@ from typing import Any
 
 from eth_account import Account
 from web3 import Web3
+from web3.exceptions import ContractLogicError
 
 from app.auth.blockchain.client import connect
 from app.auth.blockchain.compiler import load_artifact
 from app.core.clocks import now_ns
-from app.core.constants import CHAIN_ID, DEFAULT_RPC_URL, TEST_KEY_WARNING
+from app.core.constants import CHAIN_ID, DEFAULT_RPC_URL, RPC_FALLBACK_URLS, TEST_KEY_WARNING
 
 
 class RegistryAdapter:
@@ -24,9 +25,15 @@ class RegistryAdapter:
         private_key: str | None = None,
         timeout_s: float = 5.0,
         confirmation_blocks: int = 1,
+        rpc_urls: tuple[str, ...] | None = None,
+        read_timeout_s: float | None = None,
     ) -> None:
+        self.rpc_urls = rpc_urls or RPC_FALLBACK_URLS
+        if rpc_url not in self.rpc_urls:
+            self.rpc_urls = (rpc_url, *tuple(u for u in self.rpc_urls if u != rpc_url))
         self.rpc_url = rpc_url
         self.timeout_s = timeout_s
+        self.read_timeout_s = read_timeout_s if read_timeout_s is not None else min(timeout_s, 2.5)
         self.confirmation_blocks = confirmation_blocks
         self.artifact = load_artifact()
         self.w3 = connect(rpc_url, timeout_s=timeout_s)
@@ -36,14 +43,24 @@ class RegistryAdapter:
         if self.address:
             self._contract = self.w3.eth.contract(address=self.address, abi=self.artifact["abi"])
 
+    def _switch_rpc(self, rpc_url: str) -> None:
+        if rpc_url == self.rpc_url:
+            return
+        self.rpc_url = rpc_url
+        self.w3 = connect(rpc_url, timeout_s=self.timeout_s)
+        if self.address:
+            self._contract = self.w3.eth.contract(address=self.address, abi=self.artifact["abi"])
+
     @property
     def contract(self):
         if self._contract is None:
             raise RuntimeError("registry contract address is not configured")
         return self._contract
 
-    def get_record(self, uav_id: str) -> dict[str, Any]:
-        data = self.contract.functions.getRecord(uav_id).call()
+    def _get_record_once(self, uav_id: str) -> dict[str, Any]:
+        w3 = connect(self.rpc_url, timeout_s=self.read_timeout_s)
+        contract = w3.eth.contract(address=self.address, abi=self.artifact["abi"])
+        data = contract.functions.getRecord(uav_id).call()
         return {
             "uav_id": data[0],
             "public_key": bytes(data[1]),
@@ -55,6 +72,17 @@ class RegistryAdapter:
             "registered_block": int(data[7]),
             "updated_block": int(data[8]),
         }
+
+    def get_record(self, uav_id: str) -> dict[str, Any]:
+        last_exc: Exception | None = None
+        for url in self.rpc_urls:
+            try:
+                self._switch_rpc(url)
+                return self._get_record_once(uav_id)
+            except Exception as exc:  # noqa: BLE001 — try next validator RPC
+                last_exc = exc
+        assert last_exc is not None
+        raise last_exc
 
     def _account(self):
         if not self.private_key:
@@ -83,6 +111,8 @@ class RegistryAdapter:
         receipt = self.w3.eth.wait_for_transaction_receipt(
             tx_hash, timeout=max(30, int(self.timeout_s * 10)), poll_latency=0.2
         )
+        if receipt.status != 1:
+            raise ContractLogicError("transaction reverted", data=b"")
         if self.confirmation_blocks > 1:
             target = receipt.blockNumber + self.confirmation_blocks - 1
             while self.w3.eth.block_number < target:

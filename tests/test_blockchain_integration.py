@@ -1,6 +1,7 @@
 """Integration tests against local Besu. Skipped when the network is down."""
 
 import json
+import uuid
 
 import pytest
 from app.auth.blockchain.adapter import BlockchainIdentityBackend
@@ -40,6 +41,8 @@ def test_register_and_lookup(adapter):
         receipt = adapter.register(uav_id, pk, ROLE_DELIVERY)
         assert receipt["status"] == 1
         assert receipt["gas_used"] > 0
+    elif bytes(rec["public_key"] or b"") != pk:
+        adapter.update_key(uav_id, pk)
     got = adapter.get_record(uav_id)
     assert got["status"] == 1
     assert got["public_key"] == pk
@@ -50,10 +53,11 @@ def test_unauthorised_register_rejected(adapter):
     from web3.exceptions import ContractCustomError, ContractLogicError, Web3RPCError
 
     stranger = Account.create()
-    bad = RegistryAdapter(DEFAULT_RPC_URL, adapter.address, stranger.key.hex(), timeout_s=20)
     key = generate_uav_key()
     with pytest.raises((Web3RPCError, ContractLogicError, ContractCustomError, ValueError)):
-        bad.register("UAV-STRANGER", public_bytes_uncompressed(key.public_key()), ROLE_DELIVERY)
+        adapter.contract.functions.register(
+            "UAV-STRANGER", public_bytes_uncompressed(key.public_key()), ROLE_DELIVERY
+        ).call({"from": stranger.address})
 
 
 def test_blockchain_auth_and_replay(adapter):
@@ -63,6 +67,8 @@ def test_blockchain_auth_and_replay(adapter):
     rec = adapter.get_record(uav_id)
     if rec["status"] == 0:
         adapter.register(uav_id, pk, ROLE_DELIVERY)
+    elif bytes(rec["public_key"] or b"") != pk:
+        adapter.update_key(uav_id, pk)
     km = UAVKeyMaterial(uav_id, key, key.public_key(), pk, ROLE_DELIVERY)
     svc = GCSAuthService(BlockchainIdentityBackend(adapter), NonceStore())
     ch = svc.create_challenge(uav_id)
@@ -73,11 +79,13 @@ def test_blockchain_auth_and_replay(adapter):
 
 def test_revoked_identity(adapter):
     key = generate_uav_key()
-    uav_id = "UAV-ITEST-REV"
+    uav_id = f"UAV-ITEST-REV-{uuid.uuid4().hex[:8]}"
     pk = public_bytes_uncompressed(key.public_key())
     rec = adapter.get_record(uav_id)
     if rec["status"] == 0:
         adapter.register(uav_id, pk, ROLE_DELIVERY)
+    elif rec["status"] in {1, 2} and bytes(rec["public_key"] or b"") != pk:
+        adapter.update_key(uav_id, pk)
     if adapter.get_record(uav_id)["status"] != 3:
         adapter.revoke(uav_id)
     km = UAVKeyMaterial(uav_id, key, key.public_key(), pk, ROLE_DELIVERY)

@@ -1,0 +1,1145 @@
+{
+  "n_steps": 53,
+  "n_present": 53,
+  "n_missing": 0,
+  "runs_root": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs",
+  "match_method": "factor_key_latest_timestamp",
+  "steps": [
+    {
+      "step": 1,
+      "phase": "security",
+      "notes": "ch3-rq1-security-x509-n10-c1",
+      "planned_factor_key": "x509|n=10|c=1|security_battery|audit=off",
+      "mechanism": "x509",
+      "n_identities": 10,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active",
+        "unknown_uav",
+        "impersonation_wrong_key",
+        "replay",
+        "modified_nonce",
+        "modified_uav_id",
+        "modified_operation",
+        "expired_challenge",
+        "revoked_uav",
+        "unauthorised_operation",
+        "malformed",
+        "expired_certificate",
+        "untrusted_issuer"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c1-conc_mech-x509-1backend_security-battery_r30_audit-off_20260831T021332Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c1-conc_mech-x509-1backend_security-battery_r30_audit-off_20260831T021332Z",
+      "status": "completed"
+    },
+    {
+      "step": 2,
+      "phase": "security",
+      "notes": "ch3-rq1-security-blockchain-n10-c1",
+      "planned_factor_key": "blockchain|n=10|c=1|security_battery|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 10,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active",
+        "unknown_uav",
+        "impersonation_wrong_key",
+        "replay",
+        "modified_nonce",
+        "modified_uav_id",
+        "modified_operation",
+        "expired_challenge",
+        "revoked_uav",
+        "unauthorised_operation",
+        "malformed",
+        "rpc_unavailable"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c1-conc_mech-blockchain-1backend_security-battery_r30_audit-off_20260831T021343Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c1-conc_mech-blockchain-1backend_security-battery_r30_audit-off_20260831T021343Z",
+      "status": "completed"
+    },
+    {
+      "step": 3,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n10-c1-x509",
+      "planned_factor_key": "x509|n=10|c=1|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 10,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025100Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025100Z",
+      "status": "completed"
+    },
+    {
+      "step": 4,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n10-c1-blockchain",
+      "planned_factor_key": "blockchain|n=10|c=1|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 10,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025101Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025101Z",
+      "status": "completed"
+    },
+    {
+      "step": 5,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n10-c5-x509",
+      "planned_factor_key": "x509|n=10|c=5|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 10,
+      "concurrency": [
+        5
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c5-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025103Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c5-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025103Z",
+      "status": "completed"
+    },
+    {
+      "step": 6,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n10-c5-blockchain",
+      "planned_factor_key": "blockchain|n=10|c=5|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 10,
+      "concurrency": [
+        5
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025104Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025104Z",
+      "status": "completed"
+    },
+    {
+      "step": 7,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n10-c10-x509",
+      "planned_factor_key": "x509|n=10|c=10|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 10,
+      "concurrency": [
+        10
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c10-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025106Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c10-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025106Z",
+      "status": "completed"
+    },
+    {
+      "step": 8,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n10-c10-blockchain",
+      "planned_factor_key": "blockchain|n=10|c=10|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 10,
+      "concurrency": [
+        10
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025107Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025107Z",
+      "status": "completed"
+    },
+    {
+      "step": 9,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n10-c25-x509",
+      "planned_factor_key": "x509|n=10|c=25|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 10,
+      "concurrency": [
+        25
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025108Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025108Z",
+      "status": "completed"
+    },
+    {
+      "step": 10,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n10-c25-blockchain",
+      "planned_factor_key": "blockchain|n=10|c=25|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 10,
+      "concurrency": [
+        25
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025109Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025109Z",
+      "status": "completed"
+    },
+    {
+      "step": 11,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n10-c50-x509",
+      "planned_factor_key": "x509|n=10|c=50|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 10,
+      "concurrency": [
+        50
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025111Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025111Z",
+      "status": "completed"
+    },
+    {
+      "step": 12,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n10-c50-blockchain",
+      "planned_factor_key": "blockchain|n=10|c=50|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 10,
+      "concurrency": [
+        50
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025112Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025112Z",
+      "status": "completed"
+    },
+    {
+      "step": 13,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n50-c1-x509",
+      "planned_factor_key": "x509|n=50|c=1|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 50,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n50-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025114Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n50-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025114Z",
+      "status": "completed"
+    },
+    {
+      "step": 14,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n50-c1-blockchain",
+      "planned_factor_key": "blockchain|n=50|c=1|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 50,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n50-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033155Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n50-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033155Z",
+      "status": "completed"
+    },
+    {
+      "step": 15,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n50-c5-x509",
+      "planned_factor_key": "x509|n=50|c=5|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 50,
+      "concurrency": [
+        5
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n50-identities_c5-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025841Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n50-identities_c5-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025841Z",
+      "status": "completed"
+    },
+    {
+      "step": 16,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n50-c5-blockchain",
+      "planned_factor_key": "blockchain|n=50|c=5|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 50,
+      "concurrency": [
+        5
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n50-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025842Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n50-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025842Z",
+      "status": "completed"
+    },
+    {
+      "step": 17,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n50-c10-x509",
+      "planned_factor_key": "x509|n=50|c=10|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 50,
+      "concurrency": [
+        10
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n50-identities_c10-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025844Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n50-identities_c10-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025844Z",
+      "status": "completed"
+    },
+    {
+      "step": 18,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n50-c10-blockchain",
+      "planned_factor_key": "blockchain|n=50|c=10|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 50,
+      "concurrency": [
+        10
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n50-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025846Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n50-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025846Z",
+      "status": "completed"
+    },
+    {
+      "step": 19,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n50-c25-x509",
+      "planned_factor_key": "x509|n=50|c=25|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 50,
+      "concurrency": [
+        25
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n50-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025848Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n50-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025848Z",
+      "status": "completed"
+    },
+    {
+      "step": 20,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n50-c25-blockchain",
+      "planned_factor_key": "blockchain|n=50|c=25|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 50,
+      "concurrency": [
+        25
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n50-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025849Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n50-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025849Z",
+      "status": "completed"
+    },
+    {
+      "step": 21,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n50-c50-x509",
+      "planned_factor_key": "x509|n=50|c=50|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 50,
+      "concurrency": [
+        50
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n50-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025851Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n50-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025851Z",
+      "status": "completed"
+    },
+    {
+      "step": 22,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n50-c50-blockchain",
+      "planned_factor_key": "blockchain|n=50|c=50|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 50,
+      "concurrency": [
+        50
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n50-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025853Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n50-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025853Z",
+      "status": "completed"
+    },
+    {
+      "step": 23,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n100-c1-x509",
+      "planned_factor_key": "x509|n=100|c=1|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 100,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n100-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025854Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n100-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025854Z",
+      "status": "completed"
+    },
+    {
+      "step": 24,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n100-c1-blockchain",
+      "planned_factor_key": "blockchain|n=100|c=1|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 100,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n100-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025855Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n100-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T025855Z",
+      "status": "completed"
+    },
+    {
+      "step": 25,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n100-c5-x509",
+      "planned_factor_key": "x509|n=100|c=5|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 100,
+      "concurrency": [
+        5
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n100-identities_c5-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025857Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n100-identities_c5-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T025857Z",
+      "status": "completed"
+    },
+    {
+      "step": 26,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n100-c5-blockchain",
+      "planned_factor_key": "blockchain|n=100|c=5|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 100,
+      "concurrency": [
+        5
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n100-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033213Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n100-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033213Z",
+      "status": "completed"
+    },
+    {
+      "step": 27,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n100-c10-x509",
+      "planned_factor_key": "x509|n=100|c=10|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 100,
+      "concurrency": [
+        10
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n100-identities_c10-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030036Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n100-identities_c10-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030036Z",
+      "status": "completed"
+    },
+    {
+      "step": 28,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n100-c10-blockchain",
+      "planned_factor_key": "blockchain|n=100|c=10|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 100,
+      "concurrency": [
+        10
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n100-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030038Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n100-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030038Z",
+      "status": "completed"
+    },
+    {
+      "step": 29,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n100-c25-x509",
+      "planned_factor_key": "x509|n=100|c=25|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 100,
+      "concurrency": [
+        25
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n100-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030039Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n100-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030039Z",
+      "status": "completed"
+    },
+    {
+      "step": 30,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n100-c25-blockchain",
+      "planned_factor_key": "blockchain|n=100|c=25|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 100,
+      "concurrency": [
+        25
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n100-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030040Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n100-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030040Z",
+      "status": "completed"
+    },
+    {
+      "step": 31,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n100-c50-x509",
+      "planned_factor_key": "x509|n=100|c=50|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 100,
+      "concurrency": [
+        50
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n100-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030042Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n100-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030042Z",
+      "status": "completed"
+    },
+    {
+      "step": 32,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n100-c50-blockchain",
+      "planned_factor_key": "blockchain|n=100|c=50|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 100,
+      "concurrency": [
+        50
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n100-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030043Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n100-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030043Z",
+      "status": "completed"
+    },
+    {
+      "step": 33,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n250-c1-x509",
+      "planned_factor_key": "x509|n=250|c=1|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 250,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n250-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030045Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n250-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030045Z",
+      "status": "completed"
+    },
+    {
+      "step": 34,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n250-c1-blockchain",
+      "planned_factor_key": "blockchain|n=250|c=1|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 250,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n250-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030046Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n250-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030046Z",
+      "status": "completed"
+    },
+    {
+      "step": 35,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n250-c5-x509",
+      "planned_factor_key": "x509|n=250|c=5|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 250,
+      "concurrency": [
+        5
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n250-identities_c5-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030048Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n250-identities_c5-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030048Z",
+      "status": "completed"
+    },
+    {
+      "step": 36,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n250-c5-blockchain",
+      "planned_factor_key": "blockchain|n=250|c=5|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 250,
+      "concurrency": [
+        5
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n250-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030049Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n250-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030049Z",
+      "status": "completed"
+    },
+    {
+      "step": 37,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n250-c10-x509",
+      "planned_factor_key": "x509|n=250|c=10|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 250,
+      "concurrency": [
+        10
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n250-identities_c10-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030050Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n250-identities_c10-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030050Z",
+      "status": "completed"
+    },
+    {
+      "step": 38,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n250-c10-blockchain",
+      "planned_factor_key": "blockchain|n=250|c=10|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 250,
+      "concurrency": [
+        10
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n250-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030051Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n250-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030051Z",
+      "status": "completed"
+    },
+    {
+      "step": 39,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n250-c25-x509",
+      "planned_factor_key": "x509|n=250|c=25|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 250,
+      "concurrency": [
+        25
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n250-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030057Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n250-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030057Z",
+      "status": "completed"
+    },
+    {
+      "step": 40,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n250-c25-blockchain",
+      "planned_factor_key": "blockchain|n=250|c=25|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 250,
+      "concurrency": [
+        25
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n250-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030058Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n250-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030058Z",
+      "status": "completed"
+    },
+    {
+      "step": 41,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n250-c50-x509",
+      "planned_factor_key": "x509|n=250|c=50|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 250,
+      "concurrency": [
+        50
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n250-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030100Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n250-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030100Z",
+      "status": "completed"
+    },
+    {
+      "step": 42,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n250-c50-blockchain",
+      "planned_factor_key": "blockchain|n=250|c=50|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 250,
+      "concurrency": [
+        50
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n250-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030101Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n250-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030101Z",
+      "status": "completed"
+    },
+    {
+      "step": 43,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n500-c1-x509",
+      "planned_factor_key": "x509|n=500|c=1|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 500,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n500-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030103Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n500-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030103Z",
+      "status": "completed"
+    },
+    {
+      "step": 44,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n500-c1-blockchain",
+      "planned_factor_key": "blockchain|n=500|c=1|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 500,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n500-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030104Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n500-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030104Z",
+      "status": "completed"
+    },
+    {
+      "step": 45,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n500-c5-x509",
+      "planned_factor_key": "x509|n=500|c=5|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 500,
+      "concurrency": [
+        5
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n500-identities_c5-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030105Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n500-identities_c5-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030105Z",
+      "status": "completed"
+    },
+    {
+      "step": 46,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n500-c5-blockchain",
+      "planned_factor_key": "blockchain|n=500|c=5|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 500,
+      "concurrency": [
+        5
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n500-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030107Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n500-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030107Z",
+      "status": "completed"
+    },
+    {
+      "step": 47,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n500-c10-x509",
+      "planned_factor_key": "x509|n=500|c=10|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 500,
+      "concurrency": [
+        10
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n500-identities_c10-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030108Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n500-identities_c10-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030108Z",
+      "status": "completed"
+    },
+    {
+      "step": 48,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n500-c10-blockchain",
+      "planned_factor_key": "blockchain|n=500|c=10|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 500,
+      "concurrency": [
+        10
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n500-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033215Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n500-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033215Z",
+      "status": "completed"
+    },
+    {
+      "step": 49,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n500-c25-x509",
+      "planned_factor_key": "x509|n=500|c=25|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 500,
+      "concurrency": [
+        25
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030124Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030124Z",
+      "status": "completed"
+    },
+    {
+      "step": 50,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n500-c25-blockchain",
+      "planned_factor_key": "blockchain|n=500|c=25|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 500,
+      "concurrency": [
+        25
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030125Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030125Z",
+      "status": "completed"
+    },
+    {
+      "step": 51,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n500-c50-x509",
+      "planned_factor_key": "x509|n=500|c=50|valid_active|audit=off",
+      "mechanism": "x509",
+      "n_identities": 500,
+      "concurrency": [
+        50
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n500-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030127Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n500-identities_c50-conc_mech-x509-1backend_valid-active_r30_audit-off_20260831T030127Z",
+      "status": "completed"
+    },
+    {
+      "step": 52,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n500-c50-blockchain",
+      "planned_factor_key": "blockchain|n=500|c=50|valid_active|audit=off",
+      "mechanism": "blockchain",
+      "n_identities": 500,
+      "concurrency": [
+        50
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "present_on_disk": true,
+      "run_id": "n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030128Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T030128Z",
+      "status": "completed"
+    },
+    {
+      "step": 53,
+      "phase": "audit-commit",
+      "notes": "ch3-logging-blockchain-audit-n10-c1",
+      "planned_factor_key": "blockchain|n=10|c=1|valid_active|audit=on",
+      "mechanism": "blockchain",
+      "n_identities": 10,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": true,
+      "present_on_disk": true,
+      "run_id": "n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-on_20260831T030130Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-on_20260831T030130Z",
+      "status": "completed"
+    }
+  ]
+}

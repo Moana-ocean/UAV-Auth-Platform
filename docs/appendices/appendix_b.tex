@@ -3,7 +3,7 @@
 \chapter{Experimental Configuration and Execution Commands}
 \label{app:experimental-config}
 
-This appendix records the Besu/QBFT network, X.509 PKI baseline, controlled experiment parameters, 53-step execution matrix and the commands used to reproduce the corrected Chapter~5 evaluation (export root \texttt{chapter5\_rerun\_20260824T233552Z}).
+This appendix records the Besu/QBFT network, X.509 PKI baseline, controlled experiment parameters, 53-step execution matrix and the commands used to reproduce the final hardened Chapter~5 evaluation (export root \texttt{dissertation\_final\_20260831T015600Z}).
 
 \section{Hyperledger Besu and QBFT Configuration}
 \label{app:besu-config}
@@ -30,9 +30,9 @@ Table~\ref{tab:app-besu-params} summarises the permissioned ledger settings. Fou
         \hline
         QBFT request timeout & 10\,s \\
         \hline
-        Primary JSON-RPC & \texttt{http://127.0.0.1:8545} \\
+        Primary JSON-RPC & \texttt{http://127.0.0.1:8545} (fallback: 8555, 8565, 8575) \\
         \hline
-        Contract address & \texttt{0x25629De856e42E1D2d52C8916622938C20A37Cc8} \\
+        Contract address & \texttt{0x08F57a27EF9b7b5aEaC0304844783B427df6874D} \\
         \hline
         Solidity compiler & 0.8.24 \\
         \hline
@@ -196,7 +196,7 @@ The manifest for the corrected rerun recorded \texttt{n\_steps=53}, \texttt{n\_p
 \section{Execution Commands}
 \label{app:commands}
 
-The following PowerShell commands reproduce the evaluation platform and corrected matrix from repository commit \texttt{be8c1ef}:
+The following PowerShell commands reproduce the evaluation platform and final matrix on branch \texttt{final-hardening}:
 
 \begin{lstlisting}[style=powershell,caption={Environment setup and Besu deployment},label=lst:cmd-setup]
 python -m venv .venv
@@ -207,11 +207,14 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m app.cli init-identities --count 500
 \end{lstlisting}
 
-\begin{lstlisting}[style=powershell,caption={Chapter~5 matrix and export},label=lst:cmd-matrix]
+\begin{lstlisting}[style=powershell,caption={Chapter~5 matrix, ABBA batches and export},label=lst:cmd-matrix]
 .\.venv\Scripts\python.exe -m scripts.run_chapter5_matrix `
-  --output-root results/chapter5_rerun_20260824T233552Z/runs
-.\.venv\Scripts\python.exe -m app.cli export-chapter5 `
-  --runs-root results/chapter5_rerun_20260824T233552Z/runs
+  --output-root results/dissertation_final_20260831T015600Z
+.\.venv\Scripts\python.exe -m scripts.run_abba_batches `
+  --output-root results/dissertation_final_20260831T015600Z
+.\.venv\Scripts\python.exe -m scripts.export_chapter5_bundle `
+  --runs-root results/dissertation_final_20260831T015600Z/runs `
+  --export-dir results/dissertation_final_20260831T015600Z/export
 \end{lstlisting}
 
 Dry-run (print planned order only):

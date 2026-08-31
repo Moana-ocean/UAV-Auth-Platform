@@ -26,15 +26,19 @@ class BlockchainIdentityBackend(IdentityBackend):
     ) -> tuple[IdentityRecord | None, str]:
         import time
 
+        # Stay within auth_timeout_s: registry already rotates validator RPCs.
+        deadline = time.perf_counter() + 4.0
         last_exc: Exception | None = None
-        for attempt in range(8):
+        attempt = 0
+        while time.perf_counter() < deadline:
             try:
                 rec = self.adapter.get_record(uav_id)
                 last_exc = None
                 break
             except Exception as exc:  # noqa: BLE001
                 last_exc = exc
-                time.sleep(0.25 * (2**attempt) if attempt < 5 else 2.0)
+                attempt += 1
+                time.sleep(min(0.15 * (2**attempt), 0.5))
         if last_exc is not None:
             name = type(last_exc).__name__
             if "timeout" in name.lower() or "Time" in name:

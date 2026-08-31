@@ -9,7 +9,7 @@
 \section{Introduction}
 \label{sec:ch4-introduction}
 
-Chapter~\ref{chap:methodology} established how the proposed mechanism will be evaluated. This chapter turns those methodological choices into a concrete system design. The central problem is deliberately narrow: a UAV that wishes to interact with a delivery operator's ground control station (GCS) must prove that it is a registered, currently authorised device and that it possesses the private key associated with its identity. The GCS must reach this decision without trusting an identifier presented in plain text and without accepting an old authentication response replayed by an attacker.
+Chapter~\ref{chap:research-design-methodology} established how the proposed mechanism will be evaluated. This chapter turns those methodological choices into a concrete system design. The central problem is deliberately narrow: a UAV that wishes to interact with a delivery operator's ground control station (GCS) must prove that it is a registered, currently authorised device and that it possesses the private key associated with its identity. The GCS must reach this decision without trusting an identifier presented in plain text and without accepting an old authentication response replayed by an attacker.
 
 Blockchain-based UAV schemes in the literature have used distributed ledgers and smart contracts to support identity checks, access control and auditable session records. For example, Bera et al. use a private blockchain to detect unauthorised UAVs, while BETA-UAV evaluates an Ethereum-based authentication design against impersonation, replay and message-modification attacks \cite{Bera2021PrivateBlockchain,Hafeez2024BETAUAV}. These studies demonstrate that blockchain can be used as part of an authentication architecture; they do not establish that it is always more secure or more efficient than a conventional PKI. The design in this dissertation therefore treats blockchain as an identity-status and audit component, not as a substitute for sound cryptography, protected private keys or secure system administration.
 
@@ -59,7 +59,7 @@ The GCS is the verifier and policy-enforcement point. It creates authentication 
 
 The GCS belongs to the trusted computing base of the prototype. A compromised GCS could grant local access even if the ledger contained the correct state, suppress a valid request, or misreport an authentication result. Blockchain does not repair a malicious verifier. For this reason, administrative access to the GCS should be restricted, its software and configuration should be version controlled, and its decision logs should be protected from ordinary UAV accounts.
 
-Where a blockchain audit transaction is enabled, the GCS submits only the minimum event data needed for the experiment. It does not publish the full signed authentication request or operational delivery data. The GCS also measures decision time and blockchain commit time separately, following the latency boundaries established in Chapter~\ref{chap:methodology}.
+Where a blockchain audit transaction is enabled, the GCS submits only the minimum event data needed for the experiment. It does not publish the full signed authentication request or operational delivery data. The GCS also measures decision time and blockchain commit time separately, following the latency boundaries established in Chapter~\ref{chap:research-design-methodology}.
 
 \subsection{Registration Authority}
 \label{subsec:registration-authority}
@@ -181,7 +181,7 @@ SR2 and SR4 rely on established digital-signature behaviour, but their effective
 \subsection{Performance Requirements}
 \label{subsec:performance-requirements}
 
-The project does not invent a production service-level target before measuring the prototype. Instead, performance requirements ensure that the relevant costs are observable and that the system remains usable across the workload range defined in Chapter~\ref{chap:methodology}.
+The project does not invent a production service-level target before measuring the prototype. Instead, performance requirements ensure that the relevant costs are observable and that the system remains usable across the workload range defined in Chapter~\ref{chap:research-design-methodology}.
 
 \begin{table}[htbp]
     \centering

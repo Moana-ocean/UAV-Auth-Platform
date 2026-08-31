@@ -1,0 +1,11 @@
+% Abstract — update last; numbers from dissertation_final_20260831T015600Z export
+
+\begin{abstract}
+Unmanned aerial vehicle (UAV) operations in delivery networks require reliable ground-control-station (GCS) authentication before mission or telemetry services are granted. This dissertation designs, implements and experimentally compares two application-layer mechanisms that satisfy the same challenge--response security objective: a conventional X.509 public-key infrastructure baseline and a permissioned-blockchain identity registry deployed on a local four-validator Hyperledger Besu QBFT network (chain ID~20245).
+
+A controlled 53-step workload matrix evaluated security scenarios, scalability over registered identity counts ($n \in \{10,50,100,250,500\}$) and concurrency levels ($c \in \{1,5,10,25,50\}$), and optional on-chain audit logging. Each configuration used 30 measured repetitions after warm-up exclusion. Supplementary independent ABBA batches added 720 further observations at representative workload points.
+
+Under the final hardened evaluation (\texttt{dissertation\_final\_20260831T015600Z}), both mechanisms achieved full normal-authentication acceptance (750/750 measured repetitions per mechanism) with zero false acceptances across the adversarial security battery. At low concurrency ($c=1$, $n=500$), mean accepted decision latency was 1.60~ms (X.509) versus 18.78~ms (blockchain); completed throughput at high concurrency ($n=500$, $c=50$) was 59.65~requests/s versus 29.16~requests/s. Blockchain incurred higher mean host CPU utilisation (56.8\% versus 41.2\%) but offered optional immutable audit transactions (mean confirmation $\approx$ 1.95~s; 30\,291 gas units per audit record).
+
+The results support using X.509 where minimal latency and operational simplicity dominate, and using a permissioned registry where distributed identity status and append-only auditability justify measurable performance cost---provided RPC resilience and validator capacity are engineered for concurrent \texttt{eth\_call} load. All measurements were obtained on a single Windows host with loopback networking; they characterise the implemented prototype rather than wide-area operational deployment.
+\end{abstract}

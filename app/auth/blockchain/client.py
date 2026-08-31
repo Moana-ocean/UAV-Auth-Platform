@@ -42,6 +42,25 @@ def is_reachable(rpc_url: str = DEFAULT_RPC_URL, timeout_s: float = 2.0) -> bool
         return False
 
 
+def wait_until_ready(
+    urls: tuple[str, ...] | None = None,
+    *,
+    timeout_s: float = 30.0,
+    poll_s: float = 0.5,
+) -> str:
+    """Block until any Besu RPC endpoint responds or raise TimeoutError."""
+    import time
+
+    deadline = time.monotonic() + timeout_s
+    candidates = urls or RPC_FALLBACK_URLS
+    while time.monotonic() < deadline:
+        url = first_reachable_url(candidates, timeout_s=min(2.0, poll_s + 1.0))
+        if url is not None:
+            return url
+        time.sleep(poll_s)
+    raise TimeoutError("no Besu RPC endpoint reachable within timeout")
+
+
 def chain_status(rpc_url: str = DEFAULT_RPC_URL, timeout_s: float = 3.0) -> dict[str, Any]:
     info: dict[str, Any] = {"rpc_url": rpc_url, "reachable": False}
     try:

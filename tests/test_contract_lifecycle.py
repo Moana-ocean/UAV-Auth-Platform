@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import uuid
 
 import pytest
 from eth_account import Account
@@ -39,15 +40,24 @@ def _ensure_registered(adapter: RegistryAdapter, uav_id: str, role: int = ROLE_D
     key = generate_uav_key()
     pk = public_bytes_uncompressed(key.public_key())
     rec = adapter.get_record(uav_id)
-    if int(rec["status"]) == 0:
+    status = int(rec["status"])
+    if status == 0:
         adapter.register(uav_id, pk, role)
-    elif bytes(rec["public_key"] or b"") != pk:
-        adapter.update_key(uav_id, pk)
+    elif status in {1, 2}:
+        chain_pk = bytes(rec["public_key"] or b"")
+        if chain_pk != pk:
+            adapter.update_key(uav_id, pk)
+    elif status == 3:
+        raise RuntimeError(f"{uav_id} is revoked; use a fresh test id")
     return pk
 
 
+def _fresh_id(prefix: str) -> str:
+    return f"{prefix}-{uuid.uuid4().hex[:8]}"
+
+
 def test_active_to_suspended_to_active(adapter):
-    uav_id = "UAV-LIFE-SUSP"
+    uav_id = _fresh_id("UAV-LIFE-SUSP")
     _ensure_registered(adapter, uav_id)
     adapter.suspend(uav_id)
     assert adapter.get_record(uav_id)["status"] == 2
@@ -56,7 +66,7 @@ def test_active_to_suspended_to_active(adapter):
 
 
 def test_revoked_is_terminal(adapter):
-    uav_id = "UAV-LIFE-TERM"
+    uav_id = _fresh_id("UAV-LIFE-TERM")
     _ensure_registered(adapter, uav_id)
     if adapter.get_record(uav_id)["status"] != 3:
         adapter.revoke(uav_id)
@@ -67,7 +77,7 @@ def test_revoked_is_terminal(adapter):
 
 
 def test_revoked_cannot_reregister(adapter):
-    uav_id = "UAV-LIFE-REREG"
+    uav_id = _fresh_id("UAV-LIFE-REREG")
     pk = _ensure_registered(adapter, uav_id)
     adapter.revoke(uav_id)
     _expect_revert(lambda: adapter.register(uav_id, pk, ROLE_DELIVERY))
@@ -75,7 +85,7 @@ def test_revoked_cannot_reregister(adapter):
 
 @pytest.mark.parametrize("role", [1, 2, 3])
 def test_valid_roles_register(adapter, role):
-    uav_id = f"UAV-ROLE-OK-{role}"
+    uav_id = _fresh_id(f"UAV-ROLE-OK-{role}")
     key = generate_uav_key()
     pk = public_bytes_uncompressed(key.public_key())
     rec = adapter.get_record(uav_id)
@@ -88,24 +98,24 @@ def test_valid_roles_register(adapter, role):
 
 @pytest.mark.parametrize("role", [0, 4, 255])
 def test_invalid_roles_rejected(adapter, role):
-    uav_id = f"UAV-ROLE-BAD-{role}"
+    uav_id = _fresh_id(f"UAV-ROLE-BAD-{role}")
     key = generate_uav_key()
     pk = public_bytes_uncompressed(key.public_key())
     _expect_revert(lambda: adapter.register(uav_id, pk, role))
 
 
 def test_empty_public_key_rejected(adapter):
-    uav_id = "UAV-PK-EMPTY"
+    uav_id = _fresh_id("UAV-PK-EMPTY")
     _expect_revert(lambda: adapter.register(uav_id, b"", ROLE_DELIVERY))
 
 
 def test_oversized_public_key_rejected(adapter):
-    uav_id = "UAV-PK-BIG"
+    uav_id = _fresh_id("UAV-PK-BIG")
     _expect_revert(lambda: adapter.register(uav_id, b"\x00" * 129, ROLE_DELIVERY))
 
 
 def test_public_key_hash_matches(adapter):
-    uav_id = "UAV-PK-HASH"
+    uav_id = _fresh_id("UAV-PK-HASH")
     key = generate_uav_key()
     pk = public_bytes_uncompressed(key.public_key())
     rec = adapter.get_record(uav_id)
@@ -119,11 +129,15 @@ def test_public_key_hash_matches(adapter):
 
 
 def test_unauthorised_register(adapter):
+    from eth_account import Account
+
     stranger = Account.create()
-    bad = RegistryAdapter(DEFAULT_RPC_URL, adapter.address, stranger.key.hex(), timeout_s=20)
     key = generate_uav_key()
     pk = public_bytes_uncompressed(key.public_key())
-    _expect_revert(lambda: bad.register("UAV-STRANGER-LIFE", pk, ROLE_DELIVERY))
+    with pytest.raises((ContractLogicError, Web3RPCError, ValueError)):
+        adapter.contract.functions.register("UAV-STRANGER-LIFE", pk, ROLE_DELIVERY).call(
+            {"from": stranger.address}
+        )
 
 
 def test_admin_transfer_zero_rejected(adapter):
@@ -131,7 +145,7 @@ def test_admin_transfer_zero_rejected(adapter):
 
 
 def test_audit_does_not_change_status(adapter):
-    uav_id = "UAV-AUDIT-STATE"
+    uav_id = _fresh_id("UAV-AUDIT-STATE")
     _ensure_registered(adapter, uav_id)
     before = adapter.get_record(uav_id)
     adapter.record_audit(uav_id, b"\xab" * 32)

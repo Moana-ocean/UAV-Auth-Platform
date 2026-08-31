@@ -1,0 +1,90 @@
+{
+  "started_at": "2026-08-31T03:31:55.564692+00:00",
+  "finished_at": "2026-08-31T03:32:18.277328+00:00",
+  "dry_run": false,
+  "output_root": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z",
+  "n_jobs": 53,
+  "completed": [
+    {
+      "step": 14,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n50-c1-blockchain",
+      "run_id": "n50-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033155Z",
+      "mechanism": "blockchain",
+      "n_identities": 50,
+      "concurrency": [
+        1
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "estimated_requests": 32,
+      "output_root": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n50-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033155Z",
+      "status": "completed"
+    },
+    {
+      "step": 26,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n100-c5-blockchain",
+      "run_id": "n100-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033213Z",
+      "mechanism": "blockchain",
+      "n_identities": 100,
+      "concurrency": [
+        5
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "estimated_requests": 32,
+      "output_root": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n100-identities_c5-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033213Z",
+      "status": "completed"
+    },
+    {
+      "step": 48,
+      "phase": "scale-valid",
+      "notes": "ch3-rq2-rq3-n500-c10-blockchain",
+      "run_id": "n500-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033215Z",
+      "mechanism": "blockchain",
+      "n_identities": 500,
+      "concurrency": [
+        10
+      ],
+      "scenarios": [
+        "valid_active"
+      ],
+      "repetitions": 30,
+      "warmup": 2,
+      "audit_tx": false,
+      "estimated_requests": 32,
+      "output_root": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\dissertation_final_20260831T015600Z\\runs\\n500-identities_c10-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260831T033215Z",
+      "status": "completed"
+    }
+  ]
+}

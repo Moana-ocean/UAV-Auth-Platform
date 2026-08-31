@@ -1,0 +1,45 @@
+% Chapter 6: Discussion
+% Evidence: results/dissertation_final_20260831T015600Z/export/
+
+\chapter{Discussion}
+\label{chap:discussion}
+
+\section{Interpretation of Security Findings (RQ1)}
+\label{sec:disc-rq1}
+
+Chapter~\ref{chap:evaluation} reported that both the X.509 baseline and the permissioned-blockchain mechanism prevented false acceptances across the executed adversarial scenarios. The security battery therefore supports a conditional positive answer to RQ1: the implemented prototypes resist spoofing, replay, tampering, unauthorised-operation and revocation-related attacks \emph{within the defined test suite and threat boundary}.
+
+Two qualifications remain important. First, the tests assume software-held test keys and a cooperative local Besu network; they do not model malicious validators, compromised registrar keys or physical device capture. Second, the blockchain path depends on timely registry lookup via JSON-RPC; the initial matrix pass recorded RPC-timeout failures on three scalability cells before multi-endpoint failover was introduced. Operational deployments must treat identity-service availability as part of the security posture, not as an implementation detail.
+
+\section{Performance and Overhead (RQ2)}
+\label{sec:disc-rq2}
+
+The measured overhead gap between mechanisms is substantial at low concurrency: X.509 mean accepted latency near 1.4--2.1~ms versus blockchain 17--22~ms at $c=1$, reflecting the cost of on-chain \texttt{getRecord} queries before signature verification. This gap is consistent with the architectural choice to keep authentication read-only on the ledger while performing cryptography on the GCS.
+
+Blockchain also consumed more host CPU (56.8\% mean versus 41.2\% for X.509 across matrix runs), even though resident memory was comparable. The additional cost is therefore primarily computational and RPC-related rather than a large memory penalty. Optional audit transactions add a separate commit latency ($\approx$ 1.95~s mean confirmation) and 30\,291 gas units per record; these were intentionally excluded from default decision-latency summaries because they represent an asynchronous logging path.
+
+\section{Scalability and Contention (RQ3)}
+\label{sec:disc-rq3}
+
+X.509 latency at $c=1$ was insensitive to registry size up to 500 identities, and completed throughput saturated near 59.6~rps on the eight-core evaluation host. Blockchain latency at $c=1$ was similarly insensitive to $n$, but throughput stabilised near 29~rps and mean latency rose sharply at $c \geq 25$ (180--249~ms). This pattern indicates JSON-RPC and validator contention under concurrent \texttt{eth\_call} load rather than on-chain registry cardinality alone.
+
+The ABBA supplementary batches (720 observations) confirmed stable acceptance across counterbalanced mechanism orderings at $(n{=}10,c{=}1)$, $(500,25)$ and $(500,50)$, supporting the view that observed blockchain degradation is workload-contention dominated rather than an intermittent correctness fault.
+
+\section{Conditional Synthesis (RQ4)}
+\label{sec:disc-rq4}
+
+RQ4 asks when blockchain authentication is defensible relative to PKI. On this prototype, blockchain does not outperform X.509 on latency or throughput. Its measured advantages are functional: a shared, append-only identity registry with optional on-chain audit evidence and registrar-controlled lifecycle transitions (register, suspend, reinstate, revoke) enforced by smart-contract rules hardened against terminal-state violations.
+
+A defensible deployment pattern is therefore \emph{hybrid}: use PKI or local caching where sub-millisecond to low-millisecond decisions are required at scale, and use the permissioned registry where cross-organisational status consistency or tamper-evident logging justifies higher baseline latency and infrastructure complexity.
+
+\section{Threat Model and Limitations}
+\label{sec:disc-limitations}
+
+The evaluation environment (Chapter~\ref{chap:evaluation}, \texttt{LIMITATIONS.md}) bounds generalisation. Co-located validators on one workstation do not demonstrate geographic decentralisation or Byzantine resilience. Loopback networking excludes RF delay and packet loss. Python~3.13 on Windows with Docker Desktop is a development configuration, not an airborne avionics stack.
+
+Contract hardening in the final evaluation (role bounds 1--3, maximum public-key length, terminal revocation semantics) reduces known logic flaws but does not replace formal verification or independent security audit. Future work should include validator-failure experiments, persisted nonce stores across GCS restarts, and wide-area network emulation.
+
+\section{Implications for Practice}
+\label{sec:disc-practice}
+
+For delivery-network operators, the results suggest treating blockchain identity registries as \emph{control-plane} infrastructure: valuable for enrolment, revocation and audit, but requiring RPC load balancing, health checks and realistic timeout budgets when authentication rates approach tens of requests per second per GCS instance. The X.509 baseline remains appropriate when auditability requirements are met off-chain and latency targets are aggressive.

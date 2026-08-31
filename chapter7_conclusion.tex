@@ -1,0 +1,32 @@
+% Chapter 7: Conclusion and Future Work
+
+\chapter{Conclusion and Future Work}
+\label{chap:conclusion}
+
+\section{Summary of Contributions}
+\label{sec:conclusion-contributions}
+
+This dissertation contributed a comparable experimental platform for UAV-to-GCS authentication, a permissioned-blockchain identity registry with explicit smart-contract lifecycle rules, an X.509 PKI baseline under identical challenge--response semantics, and a reproducible 53-step evaluation matrix with exported evidence (\texttt{dissertation\_final\_20260831T015600Z}).
+
+The final hardened evaluation demonstrated that both mechanisms can achieve full normal-authentication acceptance (750/750 measured repetitions each) and zero false acceptances in the adversarial battery, while exhibiting materially different performance characteristics. X.509 provided lower latency (approximately 1.6~ms mean at $n=500$, $c=1$) and roughly twice the completed throughput of blockchain under high concurrency on the test host.
+
+\section{Answers to the Research Questions}
+\label{sec:conclusion-rqs}
+
+\textbf{RQ1.} Both implemented mechanisms resisted the executed spoofing, replay, tampering, unauthorised-access and revocation scenarios without false acceptances, subject to the stated threat boundary and local deployment assumptions.
+
+\textbf{RQ2.} Blockchain imposed higher decision latency and CPU overhead than X.509; optional audit transactions added sub-second submission and $\approx$ 2~s confirmation latency with measurable gas cost.
+
+\textbf{RQ3.} X.509 scaled to near 59.6~rps on the evaluation host with stable low-concurrency latency up to 500 identities. Blockchain throughput plateaued near 29~rps with pronounced latency growth under concurrent registry lookups.
+
+\textbf{RQ4.} Blockchain is conditionally justified when append-only auditability and shared registry semantics outweigh latency and infrastructure complexity; X.509 remains preferable for latency-critical, centrally administered deployments.
+
+\section{Future Work}
+\label{sec:conclusion-future}
+
+Recommended extensions include: (i)~wide-area and lossy-channel emulation for authentication latency; (ii)~validator fault-injection and quorum-loss tests on the QBFT network; (iii)~persistent nonce storage and GCS failover behaviour; (iv)~formal verification or third-party audit of the registry contract; (v)~hardware-backed key storage on representative UAV platforms; and (vi)~integration with transport-layer security and mission-system authorisation policies beyond the authentication boundary defined in Chapter~\ref{chap:research-design-methodology}.
+
+\section{Closing Remarks}
+\label{sec:conclusion-closing}
+
+Permissioned blockchain technology can support UAV identity management and auditable authentication decisions, but it is not a drop-in replacement for PKIX on performance grounds alone. The experimental evidence from this study supports mechanism selection based on explicit operational priorities---latency, auditability, administrative model and infrastructure cost---rather than on architectural preference unsupported by measurement.

@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from app.auth.blockchain.client import is_reachable
+from app.auth.blockchain.client import is_reachable, wait_until_ready
 from app.core.config import ExperimentConfig
 from app.experiments.identities import IdentityPopulation
 from app.experiments.runner import (
@@ -164,8 +164,14 @@ def _ensure_population(n: int, *, sync_chain: bool) -> dict[str, Any]:
     chain_ops: list[Any] = []
     added = int(payload.get("added", 0))
     global _CHAIN_SYNCED  # noqa: PLW0603 — process-local matrix guard
-    if sync_chain and is_reachable() and deployment_path().exists():
-        if added > 0 or not _CHAIN_SYNCED:
+    if sync_chain and deployment_path().exists():
+        ready = False
+        try:
+            wait_until_ready(timeout_s=20.0)
+            ready = True
+        except TimeoutError:
+            ready = is_reachable()
+        if ready and (added > 0 or not _CHAIN_SYNCED):
             chain_ops = register_population_on_chain(pop)
             _CHAIN_SYNCED = True
     return {
@@ -179,6 +185,7 @@ def _ensure_population(n: int, *, sync_chain: bool) -> dict[str, Any]:
 def run_matrix(
     *,
     start_step: int = 1,
+    only_steps: set[int] | None = None,
     dry_run: bool = False,
     output_root: str | None = None,
 ) -> dict[str, Any]:
@@ -198,6 +205,13 @@ def run_matrix(
     for job in jobs:
         if job.step < start_step:
             continue
+        if only_steps is not None and job.step not in only_steps:
+            continue
+        if job.cfg.mechanism == "blockchain" and not dry_run:
+            try:
+                wait_until_ready(timeout_s=30.0)
+            except TimeoutError as exc:
+                raise RuntimeError("Besu RPC not ready before blockchain matrix step") from exc
         cfg = replace(job.cfg, output_dir=str(runs_dir))
         folder = cfg.descriptive_run_id()
         record = {
@@ -264,11 +278,15 @@ def main(argv: list[str] | None = None) -> int:
     dry = "--dry-run" in argv
     start = 1
     output_root = None
+    only_steps: set[int] | None = None
     if "--start-step" in argv:
         start = int(argv[argv.index("--start-step") + 1])
     if "--output-root" in argv:
         output_root = argv[argv.index("--output-root") + 1]
-    run_matrix(start_step=start, dry_run=dry, output_root=output_root)
+    if "--only-steps" in argv:
+        raw = argv[argv.index("--only-steps") + 1]
+        only_steps = {int(s.strip()) for s in raw.split(",") if s.strip()}
+    run_matrix(start_step=start, only_steps=only_steps, dry_run=dry, output_root=output_root)
     return 0
 
 

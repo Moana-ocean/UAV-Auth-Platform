@@ -1,0 +1,157 @@
+================================================================================
+  论文 Overleaf 合并说明 + 最终实验结果摘要
+  生成日期: 2026-09-01
+  仓库: https://github.com/Moana-ocean/UAV-Auth-Platform
+  分支: final-hardening
+  提交: e3c0204 (主证据提交 a920a35)
+  标签: dissertation-final-20260831
+================================================================================
+
+一、GitHub 已推送内容
+--------------------------------------------------------------------------------
+  分支:  final-hardening  → origin/final-hardening
+  标签:  dissertation-final-20260831
+  PR:    https://github.com/Moana-ocean/UAV-Auth-Platform/pull/new/final-hardening
+
+  证据目录（已提交 export 包，未提交原始 runs/ 约 9.5MB，本地保留）:
+    results/dissertation_final_20260831T015600Z/export/
+    results/dissertation_final_20260831T015600Z/chapter5_matrix_progress.json
+    results/dissertation_final_20260831T015600Z/abba_progress.json
+    results/dissertation_final_20260831T015600Z/logs/
+
+  本地未提交（仅本机）:
+    results/dissertation_final_20260831T015600Z/runs/
+    results/dissertation_final_20260831T015600Z/abba_runs/
+
+
+二、你在 Overleaf 需要合并的文件
+--------------------------------------------------------------------------------
+
+【新增 — 请上传或复制到 Overleaf 项目根目录】
+  abstract.tex                    ← 摘要（全新，含最终数字）
+  chapter6_discussion.tex         ← 第6章 讨论（全新）
+  chapter7_conclusion.tex        ← 第7章 结论（全新）
+  references.bib                  ← 最小参考文献（本地编译用；请与现有 .bib 合并去重）
+  main.tex                        ← 仅作结构参考，勿直接覆盖你的主文件
+
+【已更新 — 用仓库版本替换 Overleaf 中同名文件】
+  chapter3.tex                    ← 修正交叉引用 chap:discussion
+  chapter4_proposed_authentication_scheme.tex  ← 修正交叉引用
+  chapter5_evaluation.tex         ← 更新 export 路径注释
+  docs/chapter5_drafts/batch1_5_1_5_3.tex   ← 新合约地址、gas
+  docs/chapter5_drafts/batch2_5_4.tex       ← 正常认证 750/750（两机制）
+  docs/chapter5_drafts/batch2_5_6_5_7.tex   ← 延迟/吞吐表（全新数字）
+  docs/chapter5_drafts/batch3_5_5.tex       ← 安全电池表（blockchain 100%）
+  docs/chapter5_drafts/batch4_5_8_5_14.tex  ← 资源/对比/RQ 总结（全新）
+  docs/appendices/appendix_a.tex            ← 新 bytecode SHA
+  docs/appendices/appendix_b.tex            ← 新合约、命令、export 路径
+  docs/appendices/appendix_c.tex            ← 可复现性表（a920a35 + tag）
+
+【Overleaf main.tex 建议合并顺序】
+  在你现有 main.tex 中:
+    1. 在 \begin{document} 后、目录前:  \input{abstract.tex}
+    2. 第5章后依次:  \input{chapter6_discussion.tex}
+                      \input{chapter7_conclusion.tex}
+    3. 附录保持:     \input{appendices.tex}
+    4. chapter5_evaluation.tex 已包含 batch1→batch4 的 \input，无需改顺序
+
+  注意: 仓库里没有第1、2章 LaTeX，你 Overleaf 上原有的 Ch1/Ch2 保持不变。
+
+
+三、相对旧版论文（be8c1ef / chapter5_rerun）的主要变化
+--------------------------------------------------------------------------------
+
+【实验层面】
+  1. 合约重新部署并加固（角色 1–3、终端 Revoked、公钥最大 128 字节）
+  2. Besu RPC 绑定 127.0.0.1，API 缩减，四 validator 端口 failover
+  3. 完整重跑 53 步矩阵 → dissertation_final_20260831T015600Z
+  4. 修复 3 个 blockchain RPC 超时 cell 后重跑，export 质量报告 0 anomalies
+  5. 新增 ABBA 独立批次: 24 runs × 30 = 720 observations
+
+【论文数字层面 — 旧版错误已修正】
+  旧版 draft 写 blockchain 正常认证 0/750（假拒绝）→ 现已改为 750/750
+  旧版安全电池写 blockchain valid_active 0%、unauthorised 0% → 现已 100%
+  旧版合约地址 0x25629De8... → 现为 0x08F57a27EF9b7b5aEaC0304844783B427df6874D
+  旧版部署 gas 1,298,376 → 现为 1,337,306
+
+【代码层面（与实验相关）】
+  app/auth/blockchain/registry.py   — getRecord 四 RPC 轮换
+  app/auth/blockchain/adapter.py    — lookup 总预算 4s
+  app/auth/blockchain/client.py     — wait_until_ready、RPC fallback
+  app/experiments/runner.py         — connect_first 建链服务
+  scripts/run_chapter5_matrix.py    — --only-steps、blockchain 前健康检查
+  scripts/run_abba_batches.py       — ABBA 批次（新增）
+  scripts/validate_thesis_tex.py    — LaTeX 引用/陈旧数字检查（新增）
+
+
+四、最终实验结果摘要（论文可直接引用）
+--------------------------------------------------------------------------------
+
+数据来源: results/dissertation_final_20260831T015600Z/export/
+质量报告: 07_data_quality_report.md — 53/53 steps, 0 anomalies
+
+【53 步矩阵】
+  manifest: n_present = 53, n_missing = 0
+
+【正常认证 valid_active（25 个 scalability cells × 30 reps）】
+  X.509:      750 / 750 accepted, false_rejections = 0
+  Blockchain: 750 / 750 accepted, false_rejections = 0
+
+【安全电池（step 1–2, n=10, c=1）】
+  False acceptances（两机制合计）: 0
+  X.509:      全部场景 expectation_met = 100%
+  Blockchain: 全部场景 expectation_met = 100%（含 valid_active、unauthorised_operation）
+
+【代表性延迟 — accepted_only, valid_active】
+  n=500, c=1:
+    X.509 mean 1.60 ms,  p95 2.21 ms
+    Blockchain mean 18.78 ms, p95 31.58 ms
+
+  n=10, c=50:
+    X.509 mean 38.88 ms, p95 73.27 ms
+    Blockchain mean 245.24 ms, p95 304.92 ms
+
+【代表性吞吐 — completed_throughput_rps】
+  n=500, c=50:
+    X.509 59.65 rps
+    Blockchain 29.16 rps
+
+【资源消耗（矩阵 run 聚合均值）】
+  X.509:      CPU 41.2%,  RSS 218.5 MiB
+  Blockchain: CPU 56.8%,  RSS 216.2 MiB
+
+【通信开销（scalability runs 均值）】
+  请求体: 两机制均 ~239 bytes
+  响应体: 两机制均 8 bytes
+
+【Gas / 审计】
+  合约部署: 1,337,306 gas
+  合约地址: 0x08F57a27EF9b7b5aEaC0304844783B427df6874D
+  审计交易（step 53）: gas_used = 30,291 / tx
+  审计确认均值: ~1952.9 ms（非决策路径）
+
+【ABBA 补充批次】
+  配置: (n=10,c=1), (n=500,c=25), (n=500,c=50) × 2 机制 × 4 batches
+  观测数: 720（24 runs × 30）
+  结果: 全部 30/30 ACCEPTED，false_rejections = 0
+  进度文件: abba_progress.json
+
+
+五、Overleaf 合并后建议检查
+--------------------------------------------------------------------------------
+  [ ] Abstract 数字与第5章一致
+  [ ] 第6–7章 RQ 回答与 batch4 总结一致
+  [ ] 附录 B/C 合约地址、commit、tag 与 GitHub 一致
+  [ ] references.bib 合并后无重复 key、无 [?] 引用
+  [ ] 全文搜索并删除任何旧数字: 0/750, 0x25629De8, 1298376
+
+
+六、详细交接文档（仓库内）
+--------------------------------------------------------------------------------
+  docs/final_hardening/FINAL_HANDOVER.md
+  docs/final_hardening/PROGRESS.md
+  results/dissertation_final_20260831T015600Z/export/07_data_quality_report.md
+
+================================================================================
+  END
+================================================================================

@@ -175,6 +175,7 @@ class ExperimentRunner:
         }
         self._total = cfg.estimate_total_requests()
         self._started = 0.0
+        self._measured_batch_seconds = 0.0
         self._cancel = threading.Event()
 
     def cancel(self) -> None:
@@ -228,14 +229,26 @@ class ExperimentRunner:
         if obs_path.exists():
             with obs_path.open(newline="", encoding="utf-8") as fh:
                 observations = list(csv.DictReader(fh))
-        elapsed = max(time.perf_counter() - self._started, 1e-9)
-        offered = self._counts["completed"] / elapsed if elapsed else None
+        wall_elapsed = max(time.perf_counter() - self._started, 1e-9)
+        # Throughput uses measured-only wall time (excludes warm-up, setup, sampler join).
+        batch_seconds = (
+            self._measured_batch_seconds if self._measured_batch_seconds > 0 else wall_elapsed
+        )
+        measured_n = sum(
+            1
+            for o in observations
+            if str(o.get("warmup", "false")).lower() not in {"true", "1", "yes"}
+        )
+        offered = measured_n / batch_seconds if batch_seconds else None
         summary = summarise_observations(
             observations,
             seed=self.cfg.random_seed,
-            batch_seconds=elapsed,
+            batch_seconds=batch_seconds,
             offered_load=offered,
         )
+        summary["wall_elapsed_s"] = wall_elapsed
+        summary["measured_batch_seconds"] = self._measured_batch_seconds
+        summary["throughput_window"] = "measured_only"
         self.store.write_json("summary.json", summary)
         with (self.store.run_dir / "summary.csv").open("w", newline="", encoding="utf-8") as fh:
             rows = summary_csv_rows(summary, self.run_id)
@@ -251,7 +264,8 @@ class ExperimentRunner:
             "completed": self._counts["completed"],
             "total": self._total,
             "counts": self._counts,
-            "elapsed_s": elapsed,
+            "elapsed_s": wall_elapsed,
+            "measured_batch_seconds": self._measured_batch_seconds,
         }
         self.store.write_status(payload_status)
         self.store.upsert_index(
@@ -272,8 +286,9 @@ class ExperimentRunner:
 
     def _run_batch(self, mechanism: str, scenario: str, conc: int, digest: str) -> None:
         warmup = self.cfg.warmup_repetitions if conc == self.cfg.concurrency_levels[0] else 0
-        measured = int(self.cfg.requests_per_concurrency or self.cfg.repetitions)
-        jobs = [("warmup", i) for i in range(warmup)] + [("meas", i) for i in range(measured)]
+        # Ensure the worker-pool limit can be saturated: measured >= concurrency.
+        configured = int(self.cfg.requests_per_concurrency or self.cfg.repetitions)
+        measured = max(configured, conc)
         service = self._service_for(mechanism, scenario)
 
         def execute(kind: str, idx: int) -> Observation | None:
@@ -343,29 +358,40 @@ class ExperimentRunner:
                 notes=getattr(prepared, "notes", ""),
             )
 
+        def _record(obs: Observation | None) -> None:
+            if obs is None:
+                return
+            assert self.store is not None
+            self.store.append_observation(obs)
+            self._counts["completed"] += 1
+            if obs.observed_outcome == "ACCEPTED":
+                self._counts["accepted"] += 1
+            elif obs.expectation_met:
+                self._counts["expected_rejection"] += 1
+            else:
+                self._counts["unexpected"] += 1
+            if obs.timeout_error_class not in {"none", ""}:
+                self._counts["timeout"] += 1
+            if obs.observed_outcome == "INTERNAL_ERROR":
+                self._counts["internal"] += 1
+            self._publish(mechanism, scenario, conc)
+
+        # Warm-ups complete before measured work (sequential, not concurrent with measured).
+        for idx in range(warmup):
+            if self._stop():
+                return
+            _record(execute("warmup", idx))
+
         workers = max(1, conc)
+        meas_jobs = [("meas", i) for i in range(measured)]
+        t_meas0 = time.perf_counter()
         with ThreadPoolExecutor(
             max_workers=workers, thread_name_prefix=f"{mechanism}-{scenario}"
         ) as pool:
-            futures = [pool.submit(execute, kind, idx) for kind, idx in jobs]
+            futures = [pool.submit(execute, kind, idx) for kind, idx in meas_jobs]
             for fut in as_completed(futures):
-                obs = fut.result()
-                if obs is None:
-                    continue
-                assert self.store is not None
-                self.store.append_observation(obs)
-                self._counts["completed"] += 1
-                if obs.observed_outcome == "ACCEPTED":
-                    self._counts["accepted"] += 1
-                elif obs.expectation_met:
-                    self._counts["expected_rejection"] += 1
-                else:
-                    self._counts["unexpected"] += 1
-                if obs.timeout_error_class not in {"none", ""}:
-                    self._counts["timeout"] += 1
-                if obs.observed_outcome == "INTERNAL_ERROR":
-                    self._counts["internal"] += 1
-                self._publish(mechanism, scenario, conc)
+                _record(fut.result())
+        self._measured_batch_seconds += max(time.perf_counter() - t_meas0, 1e-9)
 
     def _publish(self, mechanism: str, scenario: str, conc: int) -> None:
         elapsed = time.perf_counter() - self._started

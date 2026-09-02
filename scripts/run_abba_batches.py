@@ -1,11 +1,11 @@
 """Independent ABBA batch runs for statistical reliability (E-02).
 
-Design (FINAL_TEST_PLAN E-02):
+Design (FINAL_TEST_PLAN E-02), method-B instrumentation:
   configs: (n=10,c=1), (n=500,c=25), (n=500,c=50)
   mechanisms: x509, blockchain
   4 independent batches with ABBA mechanism order per config
-  30 measured repetitions + 2 warm-ups per run
-  total: 3 × 2 × 4 × 30 = 720 observations
+  measured reps = max(30, concurrency); warm-ups run sequentially first
+  Jobs are ordered by ascending n so registry population is honest.
 """
 
 from __future__ import annotations
@@ -20,10 +20,9 @@ from typing import Any
 from app.auth.blockchain.client import wait_until_ready
 from app.core.config import ExperimentConfig
 from app.experiments.runner import ExperimentRunner, project_root
-from scripts.run_chapter5_matrix import REPETITIONS, WARMUP, _ensure_population
+from scripts.run_chapter5_matrix import WARMUP, _ensure_population, _measured_reps, reset_local_identities
 
 ABBA_CONFIGS: tuple[tuple[int, int], ...] = ((10, 1), (500, 25), (500, 50))
-MECHANISMS: tuple[str, ...] = ("x509", "blockchain")
 # Batch 1/4: x509 then blockchain (A-B); batches 2/3: blockchain then x509 (B-A).
 ABBA_MECH_ORDER: dict[int, tuple[str, ...]] = {
     1: ("x509", "blockchain"),
@@ -46,19 +45,20 @@ class AbbaJob:
 
 
 def planned_jobs() -> list[AbbaJob]:
+    """Ascending-n order: finish all n=10 jobs before growing to n=500."""
     jobs: list[AbbaJob] = []
-    for batch_id in range(1, 5):
-        for n, c in ABBA_CONFIGS:
+    for n, c in ABBA_CONFIGS:
+        for batch_id in range(1, 5):
             for mech in ABBA_MECH_ORDER[batch_id]:
                 jobs.append(AbbaJob(batch_id, n, c, mech))
     return jobs
 
 
-def _run_id(job: AbbaJob) -> str:
+def _run_id(job: AbbaJob, reps: int) -> str:
     ts = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
     return (
         f"abba-b{job.batch_id}_n{job.n_identities}-identities_c{job.concurrency}-conc_"
-        f"mech-{job.mechanism}-1backend_valid-active_r{REPETITIONS}_audit-off_{ts}"
+        f"mech-{job.mechanism}-1backend_valid-active_r{reps}_audit-off_{ts}"
     )
 
 
@@ -67,6 +67,7 @@ def run_abba(
     output_root: str | Path,
     dry_run: bool = False,
     only_batches: set[int] | None = None,
+    fresh_identities: bool = False,
 ) -> dict[str, Any]:
     root = Path(output_root)
     if not root.is_absolute():
@@ -74,17 +75,24 @@ def run_abba(
     runs_dir = root / "abba_runs"
     runs_dir.mkdir(parents=True, exist_ok=True)
 
+    if fresh_identities and not dry_run:
+        reset_local_identities()
+        print("reset local identities for ABBA ascending-n population", flush=True)
+
     jobs = planned_jobs()
     if only_batches:
         jobs = [j for j in jobs if j.batch_id in only_batches]
 
     started = datetime.now(UTC).isoformat()
     completed: list[dict[str, Any]] = []
+    obs_total = 0
 
     for idx, job in enumerate(jobs, start=1):
+        reps = _measured_reps(job.concurrency)
+        obs_total += reps
         print(
             f"[{idx}/{len(jobs)}] batch={job.batch_id} n={job.n_identities} "
-            f"c={job.concurrency} mech={job.mechanism}",
+            f"c={job.concurrency} mech={job.mechanism} reps={reps}",
             flush=True,
         )
         record: dict[str, Any] = {
@@ -92,6 +100,7 @@ def run_abba(
             "n_identities": job.n_identities,
             "concurrency": job.concurrency,
             "mechanism": job.mechanism,
+            "repetitions": reps,
             "notes": job.step_label,
         }
         if dry_run:
@@ -102,22 +111,29 @@ def run_abba(
         if job.mechanism == "blockchain":
             wait_until_ready(timeout_s=30.0)
 
-        max_n = max(n for n, _ in ABBA_CONFIGS)
-        pop_info = _ensure_population(max_n, sync_chain=(job.mechanism == "blockchain"))
+        pop_info = _ensure_population(
+            job.n_identities, sync_chain=(job.mechanism == "blockchain")
+        )
         record["population"] = pop_info
+        print(
+            f"  population count={pop_info['identities']} "
+            f"added={pop_info['added']} chain_ops={pop_info['chain_ops']}",
+            flush=True,
+        )
 
         cfg = ExperimentConfig(
             mechanism=job.mechanism,
             scenarios=["valid_active"],
             n_identities=job.n_identities,
-            repetitions=REPETITIONS,
+            repetitions=reps,
+            requests_per_concurrency=reps,
             warmup_repetitions=WARMUP,
             concurrency_levels=[job.concurrency],
             confirm_large_run=True,
             notes=job.step_label,
             output_dir=str(runs_dir),
         )
-        run_id = _run_id(job)
+        run_id = _run_id(job, reps)
         record["run_id"] = run_id
         runner = ExperimentRunner(cfg, run_id=run_id)
         path = runner.run()
@@ -143,7 +159,7 @@ def run_abba(
         "dry_run": dry_run,
         "output_root": str(root),
         "n_jobs": len(jobs),
-        "n_observations": len(jobs) * REPETITIONS,
+        "n_observations": obs_total,
         "completed": completed,
     }
     (root / "abba_progress.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
@@ -153,14 +169,20 @@ def run_abba(
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     dry = "--dry-run" in argv
-    output_root = "results/dissertation_final_20260831T015600Z"
+    fresh = "--fresh-identities" in argv
+    output_root = "results/method_b_scale_20260903"
     only_batches: set[int] | None = None
     if "--output-root" in argv:
         output_root = argv[argv.index("--output-root") + 1]
     if "--only-batches" in argv:
         raw = argv[argv.index("--only-batches") + 1]
         only_batches = {int(s.strip()) for s in raw.split(",") if s.strip()}
-    run_abba(output_root=output_root, dry_run=dry, only_batches=only_batches)
+    run_abba(
+        output_root=output_root,
+        dry_run=dry,
+        only_batches=only_batches,
+        fresh_identities=fresh,
+    )
     return 0
 
 

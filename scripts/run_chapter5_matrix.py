@@ -59,6 +59,11 @@ class PlannedRun:
     ensure_identities: int | None = None
 
 
+def _measured_reps(conc: int) -> int:
+    """Measured attempts must be able to saturate the worker-pool limit."""
+    return max(REPETITIONS, int(conc))
+
+
 def planned_runs() -> list[PlannedRun]:
     """Ordered Chapter 3 matrix: security, then n × concurrency × mechanism, then audit."""
     jobs: list[PlannedRun] = []
@@ -108,6 +113,7 @@ def planned_runs() -> list[PlannedRun]:
         for conc in CONCURRENCY_LEVELS:
             for mech in ("x509", "blockchain"):
                 step += 1
+                reps = _measured_reps(conc)
                 jobs.append(
                     PlannedRun(
                         step=step,
@@ -118,7 +124,8 @@ def planned_runs() -> list[PlannedRun]:
                             mechanism=mech,
                             scenarios=["valid_active"],
                             n_identities=n,
-                            repetitions=REPETITIONS,
+                            repetitions=reps,
+                            requests_per_concurrency=reps,
                             warmup_repetitions=WARMUP,
                             concurrency_levels=[conc],
                             confirm_large_run=True,
@@ -152,6 +159,26 @@ def planned_runs() -> list[PlannedRun]:
 _CHAIN_SYNCED = False
 
 
+def reset_local_identities() -> None:
+    """Clear local UAV population so scale runs can grow n from an empty base."""
+    import shutil
+
+    root = data_dir()
+    for name in ("identities.json", "x509_roles.json"):
+        path = root / name
+        if path.exists():
+            path.unlink()
+    keys = root / "uav_keys"
+    if keys.exists():
+        shutil.rmtree(keys)
+    pki_uavs = root / "pki" / "uavs"
+    if pki_uavs.exists():
+        shutil.rmtree(pki_uavs)
+    crl = root / "pki" / "crl.pem"
+    if crl.exists():
+        crl.unlink()
+
+
 def _ensure_population(n: int, *, sync_chain: bool) -> dict[str, Any]:
     """Grow local identities; sync the chain only when needed.
 
@@ -164,6 +191,9 @@ def _ensure_population(n: int, *, sync_chain: bool) -> dict[str, Any]:
     chain_ops: list[Any] = []
     added = int(payload.get("added", 0))
     global _CHAIN_SYNCED  # noqa: PLW0603 — process-local matrix guard
+    # Local growth (often during an x509 step) invalidates the chain sync flag.
+    if added > 0:
+        _CHAIN_SYNCED = False
     if sync_chain and deployment_path().exists():
         ready = False
         try:
@@ -171,7 +201,7 @@ def _ensure_population(n: int, *, sync_chain: bool) -> dict[str, Any]:
             ready = True
         except TimeoutError:
             ready = is_reachable()
-        if ready and (added > 0 or not _CHAIN_SYNCED):
+        if ready and not _CHAIN_SYNCED:
             chain_ops = register_population_on_chain(pop)
             _CHAIN_SYNCED = True
     return {
@@ -186,6 +216,8 @@ def run_matrix(
     *,
     start_step: int = 1,
     only_steps: set[int] | None = None,
+    only_phases: set[str] | None = None,
+    fresh_identities: bool = False,
     dry_run: bool = False,
     output_root: str | None = None,
 ) -> dict[str, Any]:
@@ -193,6 +225,9 @@ def run_matrix(
 
     global _CHAIN_SYNCED  # noqa: PLW0603
     _CHAIN_SYNCED = False
+    if fresh_identities and not dry_run:
+        reset_local_identities()
+        print("reset local identities for ascending-n population", flush=True)
     jobs = planned_runs()
     root = Path(output_root) if output_root else (project_root() / "results")
     if not root.is_absolute():
@@ -206,6 +241,8 @@ def run_matrix(
         if job.step < start_step:
             continue
         if only_steps is not None and job.step not in only_steps:
+            continue
+        if only_phases is not None and job.phase not in only_phases:
             continue
         if job.cfg.mechanism == "blockchain" and not dry_run:
             try:
@@ -224,6 +261,7 @@ def run_matrix(
             "concurrency": cfg.concurrency_levels,
             "scenarios": cfg.scenarios,
             "repetitions": cfg.repetitions,
+            "requests_per_concurrency": cfg.requests_per_concurrency,
             "warmup": cfg.warmup_repetitions,
             "audit_tx": cfg.audit_tx_enabled,
             "estimated_requests": cfg.estimate_total_requests(),
@@ -232,7 +270,7 @@ def run_matrix(
         print(
             f"[{job.step}/{jobs[-1].step}] {job.phase} "
             f"n={cfg.n_identities} c={cfg.concurrency_levels} "
-            f"mech={cfg.mechanism} -> {folder}",
+            f"mech={cfg.mechanism} reps={cfg.repetitions} -> {folder}",
             flush=True,
         )
         if dry_run:
@@ -244,6 +282,11 @@ def run_matrix(
                 sync_chain=(cfg.mechanism == "blockchain"),
             )
             record["population"] = pop_info
+            print(
+                f"  population count={pop_info['identities']} "
+                f"added={pop_info['added']} chain_ops={pop_info['chain_ops']}",
+                flush=True,
+            )
         runner = ExperimentRunner(cfg, run_id=folder)
         path = runner.run()
         record["path"] = str(path)
@@ -276,9 +319,11 @@ def run_matrix(
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     dry = "--dry-run" in argv
+    fresh = "--fresh-identities" in argv
     start = 1
     output_root = None
     only_steps: set[int] | None = None
+    only_phases: set[str] | None = None
     if "--start-step" in argv:
         start = int(argv[argv.index("--start-step") + 1])
     if "--output-root" in argv:
@@ -286,7 +331,17 @@ def main(argv: list[str] | None = None) -> int:
     if "--only-steps" in argv:
         raw = argv[argv.index("--only-steps") + 1]
         only_steps = {int(s.strip()) for s in raw.split(",") if s.strip()}
-    run_matrix(start_step=start, only_steps=only_steps, dry_run=dry, output_root=output_root)
+    if "--only-phases" in argv:
+        raw = argv[argv.index("--only-phases") + 1]
+        only_phases = {s.strip() for s in raw.split(",") if s.strip()}
+    run_matrix(
+        start_step=start,
+        only_steps=only_steps,
+        only_phases=only_phases,
+        fresh_identities=fresh,
+        dry_run=dry,
+        output_root=output_root,
+    )
     return 0
 
 

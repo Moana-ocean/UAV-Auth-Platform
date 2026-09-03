@@ -1,0 +1,2 @@
+utc_timestamp,cpu_percent,rss_bytes,available_memory_bytes,net_bytes_sent,net_bytes_recv,pid,name
+2026-09-03T17:03:14.693319+00:00,108.6,247103488,540610560,355610818,1581511760,9384,python.exe

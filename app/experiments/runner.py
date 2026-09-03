@@ -442,6 +442,7 @@ def register_population_on_chain(pop: IdentityPopulation) -> list[dict[str, Any]
     )
     receipts = []
     specials = set(SPECIAL_IDS)
+    pending = 0
     for rec in pop.load_meta().get("identities", []):
         uav_id = rec["uav_id"]
         pk = bytes.fromhex(rec["public_key_hex"])
@@ -449,38 +450,105 @@ def register_population_on_chain(pop: IdentityPopulation) -> list[dict[str, Any]
         existing = _get_record_retry(adapter, uav_id)
         status = int(existing["status"])
         if status == 0:
-            receipts.append(
-                {"uav_id": uav_id, "op": "register", **adapter.register(uav_id, pk, role)}
-            )
+            try:
+                receipts.append(
+                    {
+                        "uav_id": uav_id,
+                        "op": "register",
+                        **_transact_retry(
+                            adapter, lambda a=adapter, u=uav_id, p=pk, r=role: a.register(u, p, r)
+                        ),
+                    }
+                )
+                pending += 1
+            except Exception as exc:  # noqa: BLE001
+                # Prior interrupted sync may have mined the tx; treat as ok if now registered.
+                existing = _get_record_retry(adapter, uav_id)
+                if int(existing["status"]) == 0:
+                    raise exc
+                receipts.append(
+                    {
+                        "uav_id": uav_id,
+                        "op": "register_already_present",
+                        "note": type(exc).__name__,
+                    }
+                )
             existing = _get_record_retry(adapter, uav_id)
             status = int(existing["status"])
         elif status in {1, 2} and uav_id in specials:
             chain_pk = bytes(existing["public_key"] or b"")
             if chain_pk != pk:
                 receipts.append(
-                    {"uav_id": uav_id, "op": "updateKey", **adapter.update_key(uav_id, pk)}
+                    {
+                        "uav_id": uav_id,
+                        "op": "updateKey",
+                        **_transact_retry(adapter, lambda a=adapter, u=uav_id, p=pk: a.update_key(u, p)),
+                    }
                 )
+                pending += 1
             if int(existing["role"]) != role:
                 receipts.append(
-                    {"uav_id": uav_id, "op": "updateRole", **adapter.update_role(uav_id, role)}
+                    {
+                        "uav_id": uav_id,
+                        "op": "updateRole",
+                        **_transact_retry(adapter, lambda a=adapter, u=uav_id, r=role: a.update_role(u, r)),
+                    }
                 )
+                pending += 1
         if "revoked" in rec.get("tags", []) and status != 3:
             existing = _get_record_retry(adapter, uav_id)
             status = int(existing["status"])
             if status in {1, 2}:
-                receipts.append({"uav_id": uav_id, "op": "revoke", **adapter.revoke(uav_id)})
+                receipts.append(
+                    {
+                        "uav_id": uav_id,
+                        "op": "revoke",
+                        **_transact_retry(adapter, lambda a=adapter, u=uav_id: a.revoke(u)),
+                    }
+                )
+                pending += 1
+        # Pace bulk writes so local Besu RPC does not drop connections.
+        if pending and pending % 10 == 0:
+            time.sleep(0.5)
+        elif pending and pending % 1 == 0:
+            time.sleep(0.05)
     return receipts
 
 
-def _get_record_retry(adapter: RegistryAdapter, uav_id: str, attempts: int = 5) -> dict[str, Any]:
-    import time
+def _transact_retry(adapter: RegistryAdapter, fn, attempts: int = 8) -> dict[str, Any]:
+    from web3.exceptions import ContractLogicError
 
+    last: Exception | None = None
+    for i in range(attempts):
+        try:
+            return fn()
+        except ContractLogicError:
+            raise
+        except Exception as exc:  # noqa: BLE001 — Besu/RPC transient failures
+            last = exc
+            # Rotate validator RPC and back off.
+            try:
+                url = RPC_FALLBACK_URLS[i % len(RPC_FALLBACK_URLS)]
+                adapter._switch_rpc(url)
+            except Exception:  # noqa: BLE001
+                pass
+            time.sleep(min(0.5 * (2**i), 8.0))
+    assert last is not None
+    raise last
+
+
+def _get_record_retry(adapter: RegistryAdapter, uav_id: str, attempts: int = 5) -> dict[str, Any]:
     last: Exception | None = None
     for i in range(attempts):
         try:
             return adapter.get_record(uav_id)
         except Exception as exc:  # noqa: BLE001 — Besu transient Internal error
             last = exc
+            try:
+                url = RPC_FALLBACK_URLS[i % len(RPC_FALLBACK_URLS)]
+                adapter._switch_rpc(url)
+            except Exception:  # noqa: BLE001
+                pass
             time.sleep(0.4 * (i + 1))
     assert last is not None
     raise last

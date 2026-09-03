@@ -1,0 +1,16 @@
+{
+  "run_id": "n50-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T170307Z",
+  "status": "completed",
+  "completed": 32,
+  "total": 32,
+  "counts": {
+    "completed": 32,
+    "accepted": 32,
+    "expected_rejection": 0,
+    "unexpected": 0,
+    "timeout": 0,
+    "internal": 0
+  },
+  "elapsed_s": 1.6023246999993717,
+  "measured_batch_seconds": 1.0621090000004187
+}

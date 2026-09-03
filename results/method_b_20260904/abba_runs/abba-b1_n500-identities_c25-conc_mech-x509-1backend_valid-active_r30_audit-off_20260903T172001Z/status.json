@@ -1,0 +1,16 @@
+{
+  "run_id": "abba-b1_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T172001Z",
+  "status": "completed",
+  "completed": 32,
+  "total": 32,
+  "counts": {
+    "completed": 32,
+    "accepted": 32,
+    "expected_rejection": 0,
+    "unexpected": 0,
+    "timeout": 0,
+    "internal": 0
+  },
+  "elapsed_s": 0.5046972000000096,
+  "measured_batch_seconds": 0.3622582000007242
+}

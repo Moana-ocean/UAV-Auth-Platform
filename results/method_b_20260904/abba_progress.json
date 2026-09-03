@@ -1,0 +1,418 @@
+{
+  "started_at": "2026-09-03T17:19:22.959871+00:00",
+  "finished_at": "2026-09-03T18:07:24.873606+00:00",
+  "dry_run": false,
+  "output_root": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904",
+  "n_jobs": 15,
+  "n_observations": 610,
+  "completed": [
+    {
+      "batch_id": 1,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "x509",
+      "repetitions": 30,
+      "notes": "abba-b1_n10_c1_x509",
+      "population": {
+        "identities": 10,
+        "added": 10,
+        "chain_ops": 0,
+        "chain_synced": false
+      },
+      "run_id": "abba-b1_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T171923Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b1_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T171923Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 1,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "blockchain",
+      "repetitions": 30,
+      "notes": "abba-b1_n10_c1_blockchain",
+      "population": {
+        "identities": 10,
+        "added": 0,
+        "chain_ops": 11,
+        "chain_synced": true
+      },
+      "run_id": "abba-b1_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T171947Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b1_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T171947Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "blockchain",
+      "repetitions": 30,
+      "notes": "abba-b2_n10_c1_blockchain",
+      "population": {
+        "identities": 10,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T171948Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b2_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T171948Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "x509",
+      "repetitions": 30,
+      "notes": "abba-b2_n10_c1_x509",
+      "population": {
+        "identities": 10,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T171951Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b2_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T171951Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "blockchain",
+      "repetitions": 30,
+      "notes": "abba-b3_n10_c1_blockchain",
+      "population": {
+        "identities": 10,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T171952Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b3_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T171952Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "x509",
+      "repetitions": 30,
+      "notes": "abba-b3_n10_c1_x509",
+      "population": {
+        "identities": 10,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T171954Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b3_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T171954Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "x509",
+      "repetitions": 30,
+      "notes": "abba-b4_n10_c1_x509",
+      "population": {
+        "identities": 10,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T171955Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b4_n10-identities_c1-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T171955Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 10,
+      "concurrency": 1,
+      "mechanism": "blockchain",
+      "repetitions": 30,
+      "notes": "abba-b4_n10_c1_blockchain",
+      "population": {
+        "identities": 10,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T171956Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b4_n10-identities_c1-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T171956Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 1,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "x509",
+      "repetitions": 30,
+      "notes": "abba-b1_n500_c25_x509",
+      "population": {
+        "identities": 500,
+        "added": 490,
+        "chain_ops": 0,
+        "chain_synced": false
+      },
+      "run_id": "abba-b1_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T172001Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b1_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T172001Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 1,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "blockchain",
+      "repetitions": 30,
+      "notes": "abba-b1_n500_c25_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b1_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T180637Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b1_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T180637Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "blockchain",
+      "repetitions": 30,
+      "notes": "abba-b2_n500_c25_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T180642Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b2_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T180642Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "x509",
+      "repetitions": 30,
+      "notes": "abba-b2_n500_c25_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T180646Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b2_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T180646Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "blockchain",
+      "repetitions": 30,
+      "notes": "abba-b3_n500_c25_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T180648Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b3_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T180648Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "x509",
+      "repetitions": 30,
+      "notes": "abba-b3_n500_c25_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T180651Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b3_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T180651Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "x509",
+      "repetitions": 30,
+      "notes": "abba-b4_n500_c25_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T180654Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b4_n500-identities_c25-conc_mech-x509-1backend_valid-active_r30_audit-off_20260903T180654Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 500,
+      "concurrency": 25,
+      "mechanism": "blockchain",
+      "repetitions": 30,
+      "notes": "abba-b4_n500_c25_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T180655Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b4_n500-identities_c25-conc_mech-blockchain-1backend_valid-active_r30_audit-off_20260903T180655Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 1,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "x509",
+      "repetitions": 50,
+      "notes": "abba-b1_n500_c50_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b1_n500-identities_c50-conc_mech-x509-1backend_valid-active_r50_audit-off_20260903T180658Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b1_n500-identities_c50-conc_mech-x509-1backend_valid-active_r50_audit-off_20260903T180658Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 1,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "blockchain",
+      "repetitions": 50,
+      "notes": "abba-b1_n500_c50_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b1_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r50_audit-off_20260903T180701Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b1_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r50_audit-off_20260903T180701Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "blockchain",
+      "repetitions": 50,
+      "notes": "abba-b2_n500_c50_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r50_audit-off_20260903T180704Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b2_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r50_audit-off_20260903T180704Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 2,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "x509",
+      "repetitions": 50,
+      "notes": "abba-b2_n500_c50_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b2_n500-identities_c50-conc_mech-x509-1backend_valid-active_r50_audit-off_20260903T180708Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b2_n500-identities_c50-conc_mech-x509-1backend_valid-active_r50_audit-off_20260903T180708Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "blockchain",
+      "repetitions": 50,
+      "notes": "abba-b3_n500_c50_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r50_audit-off_20260903T180711Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b3_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r50_audit-off_20260903T180711Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 3,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "x509",
+      "repetitions": 50,
+      "notes": "abba-b3_n500_c50_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b3_n500-identities_c50-conc_mech-x509-1backend_valid-active_r50_audit-off_20260903T180714Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b3_n500-identities_c50-conc_mech-x509-1backend_valid-active_r50_audit-off_20260903T180714Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "x509",
+      "repetitions": 50,
+      "notes": "abba-b4_n500_c50_x509",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n500-identities_c50-conc_mech-x509-1backend_valid-active_r50_audit-off_20260903T180717Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b4_n500-identities_c50-conc_mech-x509-1backend_valid-active_r50_audit-off_20260903T180717Z",
+      "status": "completed"
+    },
+    {
+      "batch_id": 4,
+      "n_identities": 500,
+      "concurrency": 50,
+      "mechanism": "blockchain",
+      "repetitions": 50,
+      "notes": "abba-b4_n500_c50_blockchain",
+      "population": {
+        "identities": 500,
+        "added": 0,
+        "chain_ops": 0,
+        "chain_synced": true
+      },
+      "run_id": "abba-b4_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r50_audit-off_20260903T180720Z",
+      "path": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\abba_runs\\abba-b4_n500-identities_c50-conc_mech-blockchain-1backend_valid-active_r50_audit-off_20260903T180720Z",
+      "status": "completed"
+    }
+  ]
+}

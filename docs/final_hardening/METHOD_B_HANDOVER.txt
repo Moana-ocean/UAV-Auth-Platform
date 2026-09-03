@@ -1,0 +1,35 @@
+Method B complete — Overleaf handover
+=====================================
+
+Date: 2026-09-04
+Branch: final-hardening
+Export: results/method_b_20260904/export/
+
+What finished
+-------------
+1. Scale-valid matrix: 50 cells (n×c×mech), ascending-n, fresh identities
+   - 1700/1700 measured accepted; 0 false accept/reject
+2. ABBA: 24/24 jobs; 880 observations (reps = max(30, c))
+3. Contract (ABBA redeploy): 0x17931ed1751D4f9Ec918CfB518642aB7CD06CB4d
+   gas_used=1337306  bytecode_sha256=9aaf9bc69a118390888c6fbfbe68f58c942177db78cfb54adafbb0d6d745d53c
+
+Key Method B scale numbers (n=500)
+----------------------------------
+c=1:   X.509 mean 2.03 ms / 105.35 rps ; blockchain 22.89 ms / 33.06 rps
+c=50:  X.509 mean 77.50 ms / 76.98 rps ; blockchain 536.16 ms / 38.66 rps
+Runner CPU (scale mean): X.509 50.28% ; blockchain 66.95%
+
+LaTeX updated in repo
+---------------------
+- abstract.tex
+- chapter5_evaluation.tex (header paths)
+- chapter6_discussion.tex
+- chapter7_conclusion.tex
+- docs/appendices/appendix_b.tex
+- docs/appendices/appendix_c.tex
+
+Security battery (750/750) was NOT re-run in Method B; keep prior
+dissertation_final_20260831T015600Z evidence for RQ1/audit cells.
+
+Overleaf: merge the updated .tex files above; attach or cite
+results/method_b_20260904/export/ for scale/ABBA tables.

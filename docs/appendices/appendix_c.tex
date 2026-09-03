@@ -258,13 +258,15 @@ results/dissertation_final_20260831T015600Z/
         \hline
         Prior tag (superseded) & \texttt{chapter5-rerun-20260824} $\rightarrow$ \texttt{be8c1ef} \\
         \hline
-        Export root & \texttt{results/dissertation\_final\_20260831T015600Z/export/} \\
+        Export root (security/audit) & \texttt{results/dissertation\_final\_20260831T015600Z/export/} \\
+        \hline
+        Export root (Method~B scale/ABBA) & \texttt{results/method\_b\_20260904/export/} \\
         \hline
         Contract source SHA-256 & \texttt{9b28f529ed51938883f42277b83761936ccfd2b9d0fcc57d2587a0f3e0c2992b} \\
         \hline
         Deployed bytecode SHA-256 & \texttt{9aaf9bc69a118390888c6fbfbe68f58c942177db78cfb54adafbb0d6d745d53c} \\
         \hline
-        Deployment transaction & \texttt{dda26470d3d793775beddf91497337b61699402a8cf9b8c7bfd478b89bb5e090} \\
+        Method~B ABBA deployment tx & \texttt{97b684c91b65c03df2353831d0b508773a856545ad769344cf424a5098f8ae43} \\
         \hline
         Manifest match method & \texttt{factor\_key\_latest\_timestamp} \\
         \hline
@@ -280,4 +282,4 @@ results/dissertation_final_20260831T015600Z/
 \end{lstlisting}
 
 \noindent
-\textbf{Screenshot guidance for submission.} If the examination rules permit figures in appendices, include: (i)~Docker/Besu status showing four validators and increasing block height; (ii)~the manifest header confirming \texttt{n\_present=53} and \texttt{07\_data\_quality\_report.md} showing zero anomalies; and (iii)~the \texttt{abba\_progress.json} header confirming \texttt{n\_observations=720}. Do not include private keys, certificate PEM files or complete run CSV dumps in the printed dissertation; the archive above is the authoritative evidence store.
+\textbf{Screenshot guidance for submission.} If the examination rules permit figures in appendices, include: (i)~Docker/Besu status showing four validators and increasing block height; (ii)~the Method~B quality report confirming zero scale anomalies and \texttt{abba\_progress.json} with 24 completed jobs (880 observations); and (iii)~the prior full-matrix manifest for the 53-step security/audit package. Do not include private keys, certificate PEM files or complete run CSV dumps in the printed dissertation; the archive above is the authoritative evidence store.

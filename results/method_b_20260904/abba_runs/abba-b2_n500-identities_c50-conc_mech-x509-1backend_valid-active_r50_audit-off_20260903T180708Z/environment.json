@@ -1,0 +1,50 @@
+{
+  "python": "3.13.5",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 140 Stepping 1, GenuineIntel",
+  "cpu_count": 8,
+  "total_memory_bytes": 16863318016,
+  "package_versions": {
+    "uav-auth-eval": "0.1.0",
+    "cryptography": "44.0.2",
+    "web3": "7.12.0",
+    "pandas": "2.2.3",
+    "psutil": "7.0.0"
+  },
+  "captured_at": "2026-09-03T18:07:08.245045+00:00",
+  "besu": {
+    "rpc_url": "http://127.0.0.1:8545",
+    "reachable": false
+  },
+  "deployment": {
+    "address": "0x17931ed1751D4f9Ec918CfB518642aB7CD06CB4d",
+    "tx_hash": "97b684c91b65c03df2353831d0b508773a856545ad769344cf424a5098f8ae43",
+    "block_number": 47012,
+    "gas_used": 1337306,
+    "chain_id": 20245,
+    "bytecode_sha256": "9aaf9bc69a118390888c6fbfbe68f58c942177db78cfb54adafbb0d6d745d53c",
+    "source_sha256": "9b28f529ed51938883f42277b83761936ccfd2b9d0fcc57d2587a0f3e0c2992b",
+    "solc_version": "0.8.24",
+    "registrar": "0x80970C02408d19cc3D8D504400F26Ccb6711DaB1",
+    "rpc_url": "http://127.0.0.1:8545",
+    "artifact_sha256": "9aaf9bc69a118390888c6fbfbe68f58c942177db78cfb54adafbb0d6d745d53c",
+    "image": "hyperledger/besu:26.7.1"
+  },
+  "pki": {
+    "root_ca": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\var\\pki\\root_ca.pem",
+    "issuing_ca": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\var\\pki\\issuing_ca.pem",
+    "crl": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\var\\pki\\issuing.crl",
+    "issued_certificates": 500,
+    "revoked_serials": 10,
+    "next_serial": 3142,
+    "revocation_method": "local_crl"
+  },
+  "identities": {
+    "count": 500,
+    "valid": 496,
+    "revoked": 1,
+    "expired_cert": 1,
+    "untrusted": 1,
+    "limited": 1
+  }
+}

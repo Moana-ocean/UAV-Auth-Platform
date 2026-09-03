@@ -1,0 +1,55 @@
+{
+  "n_submitted": 52,
+  "n_warmup_excluded": 2,
+  "n_measured": 50,
+  "n_accepted": 50,
+  "n_expected_rejection": 0,
+  "n_unexpected": 0,
+  "n_timeout": 0,
+  "n_internal_error": 0,
+  "failure_rate_pct": 0.0,
+  "attack_rejection_rate_pct": null,
+  "false_acceptances": 0,
+  "false_rejections": 0,
+  "completed_throughput_rps": 191.34068591852886,
+  "offered_load_rps": 191.34068591852886,
+  "counts_by_mechanism_scenario_outcome": {
+    "x509|valid_active|ACCEPTED": 50
+  },
+  "latency_all_finished": {
+    "n": 50,
+    "filter_rule": "warmup==false; include all finished decisions",
+    "mean_ms": 17.52997,
+    "median_ms": 17.204900000000002,
+    "std_ms": 5.017777747180722,
+    "min_ms": 10.0551,
+    "max_ms": 30.0422,
+    "p95_ms": 26.685665,
+    "p99_ms": 28.963758999999996,
+    "ci95_low_ms": 16.165462650000002,
+    "ci95_high_ms": 18.9461887,
+    "ci_method": "scipy.stats.bootstrap percentile 10000 resamples 95%"
+  },
+  "latency_accepted_only": {
+    "n": 50,
+    "filter_rule": "warmup==false AND observed_outcome==ACCEPTED",
+    "mean_ms": 17.52997,
+    "median_ms": 17.204900000000002,
+    "std_ms": 5.017777747180722,
+    "min_ms": 10.0551,
+    "max_ms": 30.0422,
+    "p95_ms": 26.685665,
+    "p99_ms": 28.963758999999996,
+    "ci95_low_ms": 16.165462650000002,
+    "ci95_high_ms": 18.9461887,
+    "ci_method": "scipy.stats.bootstrap percentile 10000 resamples 95%"
+  },
+  "gas_used": {
+    "n": 0,
+    "mean": null,
+    "note": "EVM gas units; not a monetary cost"
+  },
+  "wall_elapsed_s": 0.5027444000006653,
+  "measured_batch_seconds": 0.26131399999940186,
+  "throughput_window": "measured_only"
+}

@@ -91,7 +91,11 @@ class RegistryAdapter:
 
     def _transact(self, fn) -> dict[str, Any]:
         acct = self._account()
-        nonce = self.w3.eth.get_transaction_count(acct.address)
+        # Prefer pending nonce so retries after a dropped connection do not collide.
+        try:
+            nonce = self.w3.eth.get_transaction_count(acct.address, "pending")
+        except Exception:  # noqa: BLE001
+            nonce = self.w3.eth.get_transaction_count(acct.address)
         gas_price = self.w3.eth.gas_price or 1
         tx = fn.build_transaction(
             {

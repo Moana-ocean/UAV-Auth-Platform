@@ -1,5 +1,6 @@
 % Chapter 6: Discussion
-% Evidence: results/dissertation_final_20260831T015600Z/export/
+% Scale/ABBA evidence: results/method_b_20260904/export/
+% Security battery: results/dissertation_final_20260831T015600Z/export/
 
 \chapter{Discussion}
 \label{chap:discussion}
@@ -14,16 +15,16 @@ Two qualifications remain important. First, the tests assume software-held test 
 \section{Performance and Overhead (RQ2)}
 \label{sec:disc-rq2}
 
-The measured overhead gap between mechanisms is substantial at low concurrency: X.509 mean accepted latency near 1.4--2.1~ms versus blockchain 17--22~ms at $c=1$, reflecting the cost of on-chain \texttt{getRecord} queries before signature verification. This gap is consistent with the architectural choice to keep authentication read-only on the ledger while performing cryptography on the GCS.
+The measured overhead gap between mechanisms is substantial at low concurrency: on the Method~B scale re-run, X.509 mean accepted latency near 1.3--2.0~ms versus blockchain 20--33~ms at $c=1$, reflecting the cost of on-chain \texttt{getRecord} queries before signature verification. This gap is consistent with the architectural choice to keep authentication read-only on the ledger while performing cryptography on the GCS.
 
-Blockchain also consumed more host CPU (56.8\% mean versus 41.2\% for X.509 across matrix runs), even though resident memory was comparable. The additional cost is therefore primarily computational and RPC-related rather than a large memory penalty. Optional audit transactions add a separate commit latency ($\approx$ 1.95~s mean confirmation) and 30\,291 gas units per record; these were intentionally excluded from default decision-latency summaries because they represent an asynchronous logging path.
+Blockchain also consumed more runner-process CPU (66.95\% mean versus 50.28\% for X.509 across Method~B scale cells), even though resident memory was comparable. These CPU figures sample the Python experiment runner (\texttt{psutil}), not the entire host; the additional cost is therefore primarily computational and RPC-related rather than a large memory penalty. Optional audit transactions add a separate commit latency ($\approx$ 1.95~s mean confirmation) and 30\,291 gas units per record; these were intentionally excluded from default decision-latency summaries because they represent an asynchronous logging path.
 
 \section{Scalability and Contention (RQ3)}
 \label{sec:disc-rq3}
 
-X.509 latency at $c=1$ was insensitive to registry size up to 500 identities, and completed throughput saturated near 59.6~rps on the eight-core evaluation host. Blockchain latency at $c=1$ was similarly insensitive to $n$, but throughput stabilised near 29~rps and mean latency rose sharply at $c \geq 25$ (180--249~ms). This pattern indicates JSON-RPC and validator contention under concurrent \texttt{eth\_call} load rather than on-chain registry cardinality alone.
+X.509 latency at $c=1$ was insensitive to registry size up to 500 identities, and completed throughput at $n=500$, $c=50$ reached 76.98~rps on the evaluation host. Blockchain latency at $c=1$ was similarly insensitive to $n$, but throughput at the same point was 38.66~rps and mean latency rose sharply at $c \geq 25$ (hundreds of milliseconds). This pattern indicates JSON-RPC and validator contention under concurrent \texttt{eth\_call} load rather than on-chain registry cardinality alone.
 
-The ABBA supplementary batches (720 observations) confirmed stable acceptance across counterbalanced mechanism orderings at $(n{=}10,c{=}1)$, $(500,25)$ and $(500,50)$, supporting the view that observed blockchain degradation is workload-contention dominated rather than an intermittent correctness fault.
+The Method~B ABBA supplementary batches (880 observations; measured repetitions $\max(30,c)$) confirmed stable acceptance across counterbalanced mechanism orderings at $(n{=}10,c{=}1)$, $(500,25)$ and $(500,50)$, supporting the view that observed blockchain degradation is workload-contention dominated rather than an intermittent correctness fault.
 
 \section{Conditional Synthesis (RQ4)}
 \label{sec:disc-rq4}

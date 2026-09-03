@@ -1,0 +1,30 @@
+{
+  "mechanism": "x509",
+  "scenarios": [
+    "valid_active"
+  ],
+  "n_identities": 10,
+  "repetitions": 30,
+  "warmup_repetitions": 2,
+  "concurrency_levels": [
+    10
+  ],
+  "requests_per_concurrency": 30,
+  "random_seed": 42,
+  "challenge_lifetime_s": 5.0,
+  "requested_operation": "telemetry.submit",
+  "payload_size": 0,
+  "rpc_timeout_s": 5.0,
+  "auth_timeout_s": 10.0,
+  "audit_tx_enabled": false,
+  "confirmation_blocks": 1,
+  "resource_sample_interval_s": 0.5,
+  "output_dir": "E:\\\u6bd5\u8bbe\u5b9e\u9a8c\u9879\u76ee\\results\\method_b_20260904\\runs",
+  "notes": "ch3-rq2-rq3-n10-c10-x509",
+  "signature_algorithm": "ECDSA_P256_SHA256",
+  "hash_function": "SHA-256",
+  "gcs_id": "GCS-01",
+  "comparable": true,
+  "confirm_large_run": true,
+  "estimated_total_requests": 32
+}

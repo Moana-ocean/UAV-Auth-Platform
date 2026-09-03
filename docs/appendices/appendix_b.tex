@@ -3,7 +3,7 @@
 \chapter{Experimental Configuration and Execution Commands}
 \label{app:experimental-config}
 
-This appendix records the Besu/QBFT network, X.509 PKI baseline, controlled experiment parameters, 53-step execution matrix and the commands used to reproduce the final hardened Chapter~5 evaluation (export root \texttt{dissertation\_final\_20260831T015600Z}).
+This appendix records the Besu/QBFT network, X.509 PKI baseline, controlled experiment parameters, 53-step execution matrix and the commands used to reproduce the Chapter~5 evaluation. Security/audit evidence: \texttt{dissertation\_final\_20260831T015600Z}. Method~B scale/ABBA re-run: \texttt{method\_b\_20260904}.
 
 \section{Hyperledger Besu and QBFT Configuration}
 \label{app:besu-config}
@@ -32,7 +32,9 @@ Table~\ref{tab:app-besu-params} summarises the permissioned ledger settings. Fou
         \hline
         Primary JSON-RPC & \texttt{http://127.0.0.1:8545} (fallback: 8555, 8565, 8575) \\
         \hline
-        Contract address & \texttt{0x08F57a27EF9b7b5aEaC0304844783B427df6874D} \\
+        Contract address (Method~B ABBA deploy) & \texttt{0x17931ed1751D4f9Ec918CfB518642aB7CD06CB4d} \\
+        \hline
+        Deploy gas used & 1\,337\,306 \\
         \hline
         Solidity compiler & 0.8.24 \\
         \hline
@@ -208,6 +210,7 @@ python -m venv .venv
 \end{lstlisting}
 
 \begin{lstlisting}[style=powershell,caption={Chapter~5 matrix, ABBA batches and export},label=lst:cmd-matrix]
+# Full 53-step matrix (security + scale + audit)
 .\.venv\Scripts\python.exe -m scripts.run_chapter5_matrix `
   --output-root results/dissertation_final_20260831T015600Z
 .\.venv\Scripts\python.exe -m scripts.run_abba_batches `
@@ -215,6 +218,18 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m scripts.export_chapter5_bundle `
   --runs-root results/dissertation_final_20260831T015600Z/runs `
   --export-dir results/dissertation_final_20260831T015600Z/export
+
+# Method B: instrumented scale-only + ABBA (fresh ascending-n identities)
+.\.venv\Scripts\python.exe -m app.cli deploy-contract
+.\.venv\Scripts\python.exe -m scripts.run_chapter5_matrix `
+  --only-phases scale-valid --fresh-identities `
+  --output-root results/method_b_20260904
+.\.venv\Scripts\python.exe -m app.cli deploy-contract
+.\.venv\Scripts\python.exe -m scripts.run_abba_batches `
+  --fresh-identities --output-root results/method_b_20260904
+.\.venv\Scripts\python.exe -m scripts.export_chapter5_bundle `
+  --runs-root results/method_b_20260904/runs `
+  --export-dir results/method_b_20260904/export
 \end{lstlisting}
 
 Dry-run (print planned order only):

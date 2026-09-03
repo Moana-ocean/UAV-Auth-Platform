@@ -68,6 +68,7 @@ def run_abba(
     dry_run: bool = False,
     only_batches: set[int] | None = None,
     fresh_identities: bool = False,
+    start_index: int = 1,
 ) -> dict[str, Any]:
     root = Path(output_root)
     if not root.is_absolute():
@@ -82,16 +83,28 @@ def run_abba(
     jobs = planned_jobs()
     if only_batches:
         jobs = [j for j in jobs if j.batch_id in only_batches]
+    if start_index > 1:
+        jobs = jobs[start_index - 1 :]
+        print(f"resuming ABBA from job index {start_index}", flush=True)
 
     started = datetime.now(UTC).isoformat()
     completed: list[dict[str, Any]] = []
+    progress_path = root / "abba_progress.json"
+    if start_index > 1 and progress_path.exists():
+        try:
+            prev = json.loads(progress_path.read_text(encoding="utf-8"))
+            completed = list(prev.get("completed") or [])
+            started = str(prev.get("started_at") or started)
+        except json.JSONDecodeError:
+            completed = []
     obs_total = 0
 
-    for idx, job in enumerate(jobs, start=1):
+    for offset, job in enumerate(jobs):
+        idx = start_index + offset
         reps = _measured_reps(job.concurrency)
         obs_total += reps
         print(
-            f"[{idx}/{len(jobs)}] batch={job.batch_id} n={job.n_identities} "
+            f"[{idx}/24] batch={job.batch_id} n={job.n_identities} "
             f"c={job.concurrency} mech={job.mechanism} reps={reps}",
             flush=True,
         )
@@ -172,16 +185,20 @@ def main(argv: list[str] | None = None) -> int:
     fresh = "--fresh-identities" in argv
     output_root = "results/method_b_scale_20260903"
     only_batches: set[int] | None = None
+    start_index = 1
     if "--output-root" in argv:
         output_root = argv[argv.index("--output-root") + 1]
     if "--only-batches" in argv:
         raw = argv[argv.index("--only-batches") + 1]
         only_batches = {int(s.strip()) for s in raw.split(",") if s.strip()}
+    if "--start-index" in argv:
+        start_index = int(argv[argv.index("--start-index") + 1])
     run_abba(
         output_root=output_root,
         dry_run=dry,
         only_batches=only_batches,
         fresh_identities=fresh,
+        start_index=start_index,
     )
     return 0
 
